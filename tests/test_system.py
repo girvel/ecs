@@ -25,18 +25,39 @@ def pairs_system():
 
 
 def test_registering(pairs_system):
-  e = [
+  entities = [
     ecs.Entity(name='entity1'),
     ecs.Entity(name='entity2', something='123'),
     ecs.Entity(name_='entity3'),
   ]
 
-  ecs.core.register(pairs_system, e[0])
-  ecs.core.register(pairs_system, e[1])
-  ecs.core.register(pairs_system, e[2])
+  for e in entities:
+    ecs.core.register(pairs_system, e)
 
-  assert set(pairs_system.ecs_targets['first'])  == set(e[:2])
-  assert set(pairs_system.ecs_targets['second']) == set(e[:2])
+  assert set(pairs_system.ecs_targets['first'])  == set(entities[:2])
+  assert set(pairs_system.ecs_targets['second']) == set(entities[:2])
+
+
+def test_updating(pairs_system):
+  people = [
+    ecs.Entity(name='Eric'),
+    ecs.Entity(name='Red'),
+    ecs.Entity(name='Kitty'),
+  ]
+
+  container = ecs.Entity(pairs=[])
+
+  pairs_system.ecs_targets['first'] += people
+  pairs_system.ecs_targets['second'] += people
+  pairs_system.ecs_targets['container'].append(container)
+
+  ecs.core.update(pairs_system)
+
+  assert set(container.pairs) == {
+    'Eric & Eric',  'Eric & Red',  'Eric & Kitty',
+    'Red & Eric',   'Red & Red',   'Red & Kitty',
+    'Kitty & Eric', 'Kitty & Red', 'Kitty & Kitty',
+  }
 
 
 
