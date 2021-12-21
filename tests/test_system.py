@@ -5,7 +5,7 @@ import ecs.core
 
 @pytest.fixture
 def pairs_system():
-  # TODO @ecs.make_entity
+  @ecs.Entity.make
   class PairsSystem:
     ecs_targets = dict(
       first=[],
@@ -13,7 +13,6 @@ def pairs_system():
       container=[],
     )
 
-    @staticmethod
     def process(
       first: 'name',
       second: 'name',

@@ -2,6 +2,13 @@ class Entity:
 	def __init__(self, **parameters):
 		for k, v in parameters.items():
 			setattr(self, k, v)
+
+	@classmethod
+	def make(cls, object_):
+		return cls(**{
+			k: v for k, v in object_.__dict__.items()
+			if k not in ('__dict__', '__weakref__')
+		})
 			
 	def __getattr__(self, index):
 		return None
