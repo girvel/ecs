@@ -24,7 +24,7 @@ def pairs_system():
   return PairsSystem
 
 
-def test_registering(pairs_system):
+def test_adding(pairs_system):
   entities = [
     ecs.Entity(name='entity1'),
     ecs.Entity(name='entity2', something='123'),
@@ -32,7 +32,7 @@ def test_registering(pairs_system):
   ]
 
   for e in entities:
-    ecs.core.register(pairs_system, e)
+    ecs.core.add(pairs_system, e)
 
   assert set(pairs_system.ecs_targets['first'])  == set(entities[:2])
   assert set(pairs_system.ecs_targets['second']) == set(entities[:2])

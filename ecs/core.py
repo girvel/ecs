@@ -13,7 +13,7 @@ class Entity:
 		return str(self.__dict__)
 
 
-def register(system, entity):
+def add(system, entity):
 	assert hasattr(system, 'ecs_targets') and hasattr(system, 'process')
 
 	for member_name, annotation in system.process.__annotations__.items():
