@@ -44,3 +44,11 @@ def update(system):
 		del members[keys[i]]
 
 	return _update({})
+
+
+@Entity.make
+class Metasystem:
+	def process(system: "process"):
+		update(system)
+
+	def add():
