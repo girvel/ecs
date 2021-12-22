@@ -1,7 +1,7 @@
 import ecs
 
 
-def test_entity_creation():
+def test_entity_creates_anonymous_object():
   entity = ecs.Entity(
     name='custom-entity',
     some_parameter=42,

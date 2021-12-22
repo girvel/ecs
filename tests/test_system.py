@@ -23,7 +23,7 @@ def pairs_system():
   return PairsSystem
 
 
-def test_adding(pairs_system):
+def test_add_forms_ecs_targets(pairs_system):
   entities = [
     ecs.Entity(name='entity1'),
     ecs.Entity(name='entity2', something='123'),
@@ -37,7 +37,7 @@ def test_adding(pairs_system):
   assert set(pairs_system.ecs_targets['second']) == set(entities[:2])
 
 
-def test_updating(pairs_system):
+def test_update_bruteforces_entities(pairs_system):
   people = [
     ecs.Entity(name='Eric'),
     ecs.Entity(name='Red'),
