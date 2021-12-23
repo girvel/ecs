@@ -59,6 +59,7 @@ class Metasystem(Entity):
 		for system in self.ecs_targets["system"]:
 			add(system, entity)
 		add(self, entity)
+		return entity
 
 	def update(self):
 		update(self)
