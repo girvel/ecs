@@ -14,6 +14,7 @@ def pairs_system():
     )
 
     def process(
+      self,
       first: 'name',
       second: 'name',
       container: 'pairs',

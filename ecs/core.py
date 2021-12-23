@@ -34,7 +34,7 @@ def update(system):
 	def _update(members):
 		i = len(members)
 		if i == len(keys):
-			system.process(**members)
+			system.process(system, **members)
 			return
 
 		for target in system.ecs_targets[keys[i]]:
