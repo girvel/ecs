@@ -34,22 +34,31 @@ def update(system):
 	def _update(members):
 		i = len(members)
 		if i == len(keys):
-			system.process(system, **members)
+			system.process(**members)
 			return
 
-		for target in system.ecs_targets[keys[i]]:
-			members[keys[i]] = target
-			_update(members)
+		if len(system.ecs_targets[keys[i]]) > 0:
+			for target in system.ecs_targets[keys[i]]:
+				members[keys[i]] = target
+				_update(members)
 
-		del members[keys[i]]
+			del members[keys[i]]
 
 	return _update({})
 
 
-def construct_metasystem():
-	@Entity.make
-	class Metasystem:
-		def process(system: "process"):
-			update(system)
+class Metasystem(Entity):
+	ecs_targets = dict(
+		system=[]
+	)
 
-	return Metasystem
+	def process(self, system: "process"):
+		update(system)
+
+	def add(self, entity):
+		for system in self.ecs_targets["system"]:
+			add(system, entity)
+		add(self, entity)
+
+	def update(self):
+		update(self)
