@@ -1,8 +1,6 @@
 import pytest
 import ecs.core
 
-@pytest.fixture
-
 
 def test_metasystem():
   processed_entities = []

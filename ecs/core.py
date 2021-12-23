@@ -50,5 +50,3 @@ def update(system):
 class Metasystem:
 	def process(system: "process"):
 		update(system)
-
-	def add():
