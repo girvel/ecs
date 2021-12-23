@@ -46,7 +46,10 @@ def update(system):
 	return _update({})
 
 
-@Entity.make
-class Metasystem:
-	def process(system: "process"):
-		update(system)
+def construct_metasystem():
+	@Entity.make
+	class Metasystem:
+		def process(system: "process"):
+			update(system)
+
+	return Metasystem
