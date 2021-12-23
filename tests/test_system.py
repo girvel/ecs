@@ -5,8 +5,7 @@ import ecs.core
 
 @pytest.fixture
 def pairs_system():
-  @ecs.Entity.make
-  class PairsSystem:
+  class PairsSystem(ecs.Entity):
     ecs_targets = dict(
       first=[],
       second=[],
@@ -15,13 +14,13 @@ def pairs_system():
 
     def process(
       self,
-      first: 'name',
+      first: "name",
       second: 'name',
       container: 'pairs',
     ):
       container.pairs.append("{} & {}".format(first.name, second.name))
 
-  return PairsSystem
+  return PairsSystem()
 
 
 def test_add_forms_ecs_targets(pairs_system):
