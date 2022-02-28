@@ -47,6 +47,24 @@ def update(system):
 	return _update({})
 
 
+def create_system(protosystem) -> Entity:
+	"""Creates system from an annotated function
+
+	Args:
+		protosystem: function annotated in ECS style
+
+	Returns:
+		New entity with `process` and `ecs_targets` fields
+	"""
+
+	return Entity(
+		process=protosystem,
+		ecs_targets={
+			member_name: [] for member_name in protosystem.__annotations__
+		},
+	)
+
+
 class Metasystem(Entity):
 	ecs_targets = dict(
 		system=[]
