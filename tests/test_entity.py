@@ -27,3 +27,4 @@ def test_is_lua_style_object():
   assert entity.first_field == 1
   assert entity['second_field'] == 2
   assert entity['Third field'] == 3
+  assert 'Third field' in entity

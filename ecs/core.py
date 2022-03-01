@@ -19,6 +19,9 @@ class Entity:
 	def __setitem__(self, item, value):
 		return setattr(self, item, value)
 
+	def __contains__(self, item):
+		return hasattr(self, item) and self[item] is not None
+
 	def __repr__(self):
 		return str(self.__dict__)
 
