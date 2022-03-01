@@ -1,7 +1,7 @@
 import ecs
 
 
-def test_entity_creates_anonymous_object():
+def test_creates_anonymous_object():
   entity = ecs.Entity(
     name='custom-entity',
     some_parameter=42,
@@ -11,7 +11,19 @@ def test_entity_creates_anonymous_object():
   assert entity.some_parameter == 42
 
 
-def test_entity_undefined_parameters_are_none():
+def test_undefined_parameters_are_none():
   entity = ecs.Entity()
 
   assert entity.undefined_parameter is None
+
+
+def test_is_lua_style_object():
+  entity = ecs.Entity()
+
+  entity['first_field'] = 1
+  entity.second_field = 2
+  entity['Third field'] = 3
+
+  assert entity.first_field == 1
+  assert entity['second_field'] == 2
+  assert entity['Third field'] == 3

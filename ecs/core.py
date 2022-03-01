@@ -16,6 +16,9 @@ class Entity:
 	def __getitem__(self, item):
 		return getattr(self, item)
 
+	def __setitem__(self, item, value):
+		return setattr(self, item, value)
+
 	def __repr__(self):
 		return str(self.__dict__)
 
