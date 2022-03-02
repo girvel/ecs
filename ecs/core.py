@@ -23,7 +23,7 @@ class Entity:
 		return hasattr(self, item) and self[item] is not None
 
 	def __repr__(self):
-		return str(self.__dict__)
+		return f'Entity(name={self.name})'
 
 
 def add(system, entity):
