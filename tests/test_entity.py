@@ -28,3 +28,11 @@ def test_is_lua_style_object():
   assert entity['second_field'] == 2
   assert entity['Third field'] == 3
   assert 'Third field' in entity
+
+
+def test_is_easily_convertible_to_a_dict():
+  assert dict(ecs.Entity(a=1, b=2)) == {'a': 1, 'b': 2}
+
+
+def test_is_iterable():
+  assert list(ecs.Entity(a=1, b=2)) == [('a', 1), ('b', 2)]
