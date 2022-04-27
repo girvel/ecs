@@ -3,15 +3,8 @@ class Entity:
 		for k, v in parameters.items():
 			setattr(self, k, v)
 
-	@classmethod
-	def make(cls, object_):
-		return cls(**{
-			k: v for k, v in object_.__dict__.items()
-			if k not in ('__dict__', '__weakref__')
-		})
-			
-	def __getattr__(self, index):
-		return None
+	def __delitem__(self, key):
+		return delattr(self, key)
 
 	def __getitem__(self, item):
 		return getattr(self, item)
@@ -20,17 +13,22 @@ class Entity:
 		return setattr(self, item, value)
 
 	def __contains__(self, item):
-		return hasattr(self, item) and self[item] is not None
+		return hasattr(self, item)
 
 	def __repr__(self):
 		return f'Entity(name={self.name})'
+
+	def __iter__(self):
+		for attr_name in dir(self):
+			if not attr_name.startswith('__') or not attr_name.endswith('__'):
+				yield attr_name, getattr(self, attr_name)
 
 
 def add(system, entity):
 	assert hasattr(system, 'ecs_targets') and hasattr(system, 'process')
 
 	for member_name, annotation in system.process.__annotations__.items():
-		if all(entity[p] is not None for p in annotation.split(', ')):
+		if all(p in entity for p in annotation.split(', ')):
 			system.ecs_targets[member_name].append(entity)
 
 

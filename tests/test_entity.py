@@ -11,12 +11,6 @@ def test_creates_anonymous_object():
   assert entity.some_parameter == 42
 
 
-def test_undefined_parameters_are_none():
-  entity = ecs.Entity()
-
-  assert entity.undefined_parameter is None
-
-
 def test_is_lua_style_object():
   entity = ecs.Entity()
 
