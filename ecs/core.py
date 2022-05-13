@@ -1,6 +1,12 @@
 class Entity:
-	def __init__(self, **parameters):
-		for k, v in parameters.items():
+	"""Entity represents any object inside the game"""
+
+	def __init__(self, **attributes):
+		"""
+		Args:
+			**attributes: entity's future attributes in format
+		"""
+		for k, v in attributes.items():
 			setattr(self, k, v)
 
 	def __delitem__(self, key):
