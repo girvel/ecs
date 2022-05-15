@@ -22,7 +22,7 @@ class Entity:
 		return hasattr(self, item)
 
 	def __repr__(self):
-		return f'Entity(name={self.name})'
+		return f'Entity(name={getattr(self, "name", None)})'
 
 	def __iter__(self):
 		for attr_name in dir(self):
@@ -31,11 +31,17 @@ class Entity:
 
 
 def add(system, entity):
-	assert hasattr(system, 'ecs_targets') and hasattr(system, 'process')
+	assert all(hasattr(system, a) for a in (
+		'process', 'ecs_targets', 'ecs_requirements'
+	))
 
-	for member_name, annotation in system.process.__annotations__.items():
-		if all(p in entity for p in annotation.split(', ')):
-			system.ecs_targets[member_name].append(entity)
+	for member_name, requirements in system.ecs_requirements.items():
+		if all(p in entity for p in requirements):
+			system.ecs_targets[member_name].add(entity)
+
+def remove(system, entity):
+	for targets in system.ecs_targets.values():
+		targets.remove(entity)
 
 
 def update(system):
@@ -64,29 +70,75 @@ def create_system(protosystem) -> Entity:
 		protosystem: function annotated in ECS style
 
 	Returns:
-		New entity with `process` and `ecs_targets` fields
+		New entity with `process`, `ecs_targets` and `ecs_requirements` fields
 	"""
 
 	return Entity(
 		process=protosystem,
 		ecs_targets={
-			member_name: [] for member_name in protosystem.__annotations__
+			member_name: set() for member_name in protosystem.__annotations__
 		},
+		ecs_requirements={
+			member_name: set(annotation.split(', '))
+			for member_name, annotation
+			in protosystem.__annotations__.items()
+		}
 	)
+
+
+class OwnedEntity(Entity):
+	"""Represents an entity, that belongs to some metasystem"""
+	def __init__(self, metasystem, /, **attributes):
+		self.ecs_metasystem = metasystem
+		super().__init__(**attributes)
+
+	def __setattr__(self, key, value):
+		super().__setattr__(key, value)
+		self.ecs_metasystem.add(self, key)
+
+	def __delattr__(self, item):
+		super().__delattr__(item)
+		self.ecs_metasystem.remove(self, item)
 
 
 class Metasystem(Entity):
-	ecs_targets = dict(
-		system=[]
-	)
+	ecs_targets = {
+		'system': set(),
+	}
 
-	def process(self, system: "process"):
+	ecs_requirements = {
+		'system': {'process'}
+	}
+
+	def process(self, system):
 		update(system)
 
-	def add(self, entity):
-		for system in self.ecs_targets["system"]:
-			add(system, entity)
+	def add(self, entity, new_attribute=None):
+		if new_attribute is None:  # this should be moved to .create
+			return OwnedEntity(self, **dict(entity))
+
 		add(self, entity)
+		for system in self.ecs_targets["system"]:
+			if any(new_attribute in r for r in system.ecs_requirements.values()):
+				add(system, entity)
+
+		return entity
+
+	def remove(self, entity, deleted_attribute=None):
+		systems = self.ecs_targets["system"]
+
+		if deleted_attribute is None:
+			remove(self, entity)
+			entity.ecs_metasystem = None
+		else:
+			systems = [
+				s for s in systems
+				if deleted_attribute in s.ecs_requirements
+			]
+
+		for system in systems:
+			remove(system, entity)
+
 		return entity
 
 	def update(self):

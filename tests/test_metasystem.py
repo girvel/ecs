@@ -9,10 +9,14 @@ def test_metasystem():
 
   class system(ecs.Entity):
     ecs_targets = dict(
-      entity=[]
+      entity=set()
     )
 
-    def process(self, entity: "name"):
+    ecs_requirements = dict(
+      entity={'name'}
+    )
+
+    def process(self, entity):
       processed_entities.append(entity.name)
 
   system = system()
@@ -26,22 +30,20 @@ def test_metasystem():
 
   metasystem.update()
 
-  assert set(processed_entities) == {
-    "Hyde", "Jackie"
-  }
+  assert set(processed_entities) == {"Hyde", "Jackie"}
 
 def test_dynamic_distribution():
-  processed_entities = []
+  processed_entities = set()
 
   ms = ecs.Metasystem()
 
   @ms.add
   @ecs.create_system
   def process(entity: "name"):
-    processed_entities.append(entity.name)
+    processed_entities.add(entity.name)
 
   e = ms.add(ecs.Entity())
   e.name = 'Mike'
   ms.update()
 
-  assert set(processed_entities) == {'Mike'}
+  assert processed_entities == {'Mike'}
