@@ -102,13 +102,9 @@ class OwnedEntity(Entity):
 
 
 class Metasystem(Entity):
-	ecs_targets = {
-		'system': set(),
-	}
-
-	ecs_requirements = {
-		'system': {'process'}
-	}
+	def __init__(self):
+		self.ecs_targets = {'system': set(),}
+		self.ecs_requirements = {'system': {'process'}}
 
 	def process(self, system):
 		update(system)
@@ -128,12 +124,13 @@ class Metasystem(Entity):
 		systems = self.ecs_targets["system"]
 
 		if deleted_attribute is None:
-			remove(self, entity)
 			entity.ecs_metasystem = None
 		else:
 			systems = [
-				s for s in systems
-				if deleted_attribute in s.ecs_requirements
+				s for s in [self, *systems]
+				if any(
+					deleted_attribute in r for r in s.ecs_requirements.values()
+				)
 			]
 
 		for system in systems:
