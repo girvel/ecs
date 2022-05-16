@@ -22,7 +22,7 @@ class Entity:
 		return hasattr(self, item)
 
 	def __repr__(self):
-		return f'Entity(name={self.name})'
+		return f'Entity(name={getattr(self, "name", None)})'
 
 	def __iter__(self):
 		for attr_name in dir(self):
@@ -31,11 +31,17 @@ class Entity:
 
 
 def add(system, entity):
-	assert hasattr(system, 'ecs_targets') and hasattr(system, 'process')
+	assert all(hasattr(system, a) for a in (
+		'process', 'ecs_targets', 'ecs_requirements'
+	))
 
-	for member_name, annotation in system.process.__annotations__.items():
-		if all(p in entity for p in annotation.split(', ')):
-			system.ecs_targets[member_name].append(entity)
+	for member_name, requirements in system.ecs_requirements.items():
+		if all(p in entity for p in requirements):
+			system.ecs_targets[member_name].add(entity)
+
+def remove(system, entity):
+	for targets in system.ecs_targets.values():
+		targets.remove(entity)
 
 
 def update(system):
@@ -57,6 +63,34 @@ def update(system):
 	return _update({})
 
 
+def register_attribute(metasystem, entity, attribute):
+	add(metasystem, entity)
+	for system in metasystem.ecs_targets["system"]:
+		if any(attribute in r for r in system.ecs_requirements.values()):
+			add(system, entity)
+
+	return entity
+
+
+def unregister_attribute(metasystem, entity, attribute=None):
+	systems = [metasystem, *metasystem.ecs_targets["system"]]
+
+	if attribute is None:
+		entity.ecs_metasystem = None
+	else:
+		systems = [
+			s for s in systems
+			if any(
+				attribute in r for r in s.ecs_requirements.values()
+			)
+		]
+
+	for system in systems:
+		remove(system, entity)
+
+	return entity
+
+
 def create_system(protosystem) -> Entity:
 	"""Creates system from an annotated function
 
@@ -64,30 +98,76 @@ def create_system(protosystem) -> Entity:
 		protosystem: function annotated in ECS style
 
 	Returns:
-		New entity with `process` and `ecs_targets` fields
+		New entity with `process`, `ecs_targets` and `ecs_requirements` fields
 	"""
 
 	return Entity(
 		process=protosystem,
 		ecs_targets={
-			member_name: [] for member_name in protosystem.__annotations__
+			member_name: set() for member_name in protosystem.__annotations__
 		},
+		ecs_requirements={
+			member_name: set(annotation.split(', '))
+			for member_name, annotation
+			in protosystem.__annotations__.items()
+		}
 	)
+
+
+class OwnedEntity(Entity):
+	"""Represents an entity, that belongs to some metasystem"""
+	def __init__(self, metasystem, /, **attributes):
+		self.ecs_metasystem = metasystem
+		super().__init__(**attributes)
+
+	def __setattr__(self, key, value):
+		super().__setattr__(key, value)
+		register_attribute(self.ecs_metasystem, self, key)
+
+	def __delattr__(self, item):
+		super().__delattr__(item)
+		unregister_attribute(self.ecs_metasystem, self, item)
 
 
 class Metasystem(Entity):
-	ecs_targets = dict(
-		system=[]
-	)
+	def __init__(self):
+		self.ecs_targets = {'system': set(),}
+		self.ecs_requirements = {
+			'system': {'process', 'ecs_requirements', 'ecs_targets'}
+		}
 
-	def process(self, system: "process"):
+	def process(self, system):
 		update(system)
 
-	def add(self, entity):
-		for system in self.ecs_targets["system"]:
-			add(system, entity)
-		add(self, entity)
-		return entity
+	def create(self, **attributes):
+		return OwnedEntity(self, **attributes)
+
+	def create_system(self, protosystem):
+		"""Creates system from an annotated function and adds it to the world
+
+		Args:
+			protosystem: function annotated in ECS style
+
+		Returns:
+			New owned entity with `process`, `ecs_targets` and
+			`ecs_requirements` fields
+		"""
+
+		return OwnedEntity(
+			self,
+			process=protosystem,
+			ecs_targets={
+				member_name: set() for member_name in protosystem.__annotations__
+			},
+			ecs_requirements={
+				member_name: set(annotation.split(', '))
+				for member_name, annotation
+				in protosystem.__annotations__.items()
+			}
+		)
+
+	def remove(self, entity):
+		unregister_attribute(self, entity)
 
 	def update(self):
 		update(self)

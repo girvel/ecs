@@ -7,17 +7,18 @@ import ecs.core
 def pairs_system():
   class PairsSystem(ecs.Entity):
     ecs_targets = dict(
-      first=[],
-      second=[],
-      container=[],
+      first=set(),
+      second=set(),
+      container=set(),
     )
 
-    def process(
-      self,
-      first: "name",
-      second: 'name',
-      container: 'pairs',
-    ):
+    ecs_requirements = dict(
+      first={'name'},
+      second={'name'},
+      container={'pairs'},
+    )
+
+    def process(self, first, second, container):
       container.pairs.append("{} & {}".format(first.name, second.name))
 
   return PairsSystem()
@@ -46,9 +47,9 @@ def test_update_bruteforces_entities(pairs_system):
 
   container = ecs.Entity(pairs=[])
 
-  pairs_system.ecs_targets['first'] += people
-  pairs_system.ecs_targets['second'] += people
-  pairs_system.ecs_targets['container'].append(container)
+  pairs_system.ecs_targets['first'] |= set(people)
+  pairs_system.ecs_targets['second'] |= set(people)
+  pairs_system.ecs_targets['container'].add(container)
 
   ecs.core.update(pairs_system)
 
