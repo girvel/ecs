@@ -132,13 +132,39 @@ class OwnedEntity(Entity):
 class Metasystem(Entity):
 	def __init__(self):
 		self.ecs_targets = {'system': set(),}
-		self.ecs_requirements = {'system': {'process'}}
+		self.ecs_requirements = {
+			'system': {'process', 'ecs_requirements', 'ecs_targets'}
+		}
 
 	def process(self, system):
 		update(system)
 
 	def create(self, **attributes):
 		return OwnedEntity(self, **attributes)
+
+	def create_system(self, protosystem):
+		"""Creates system from an annotated function and adds it to the world
+
+		Args:
+			protosystem: function annotated in ECS style
+
+		Returns:
+			New owned entity with `process`, `ecs_targets` and
+			`ecs_requirements` fields
+		"""
+
+		return OwnedEntity(
+			self,
+			process=protosystem,
+			ecs_targets={
+				member_name: set() for member_name in protosystem.__annotations__
+			},
+			ecs_requirements={
+				member_name: set(annotation.split(', '))
+				for member_name, annotation
+				in protosystem.__annotations__.items()
+			}
+		)
 
 	def remove(self, entity):
 		unregister_attribute(self, entity)
