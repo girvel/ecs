@@ -63,6 +63,34 @@ def update(system):
 	return _update({})
 
 
+def register_attribute(metasystem, entity, attribute):
+	add(metasystem, entity)
+	for system in metasystem.ecs_targets["system"]:
+		if any(attribute in r for r in system.ecs_requirements.values()):
+			add(system, entity)
+
+	return entity
+
+
+def unregister_attribute(metasystem, entity, attribute=None):
+	systems = [metasystem, *metasystem.ecs_targets["system"]]
+
+	if attribute is None:
+		entity.ecs_metasystem = None
+	else:
+		systems = [
+			s for s in systems
+			if any(
+				attribute in r for r in s.ecs_requirements.values()
+			)
+		]
+
+	for system in systems:
+		remove(system, entity)
+
+	return entity
+
+
 def create_system(protosystem) -> Entity:
 	"""Creates system from an annotated function
 
@@ -94,11 +122,11 @@ class OwnedEntity(Entity):
 
 	def __setattr__(self, key, value):
 		super().__setattr__(key, value)
-		self.ecs_metasystem.add(self, key)
+		register_attribute(self.ecs_metasystem, self, key)
 
 	def __delattr__(self, item):
 		super().__delattr__(item)
-		self.ecs_metasystem.remove(self, item)
+		unregister_attribute(self.ecs_metasystem, self, item)
 
 
 class Metasystem(Entity):
@@ -109,34 +137,11 @@ class Metasystem(Entity):
 	def process(self, system):
 		update(system)
 
-	def add(self, entity, new_attribute=None):
-		if new_attribute is None:  # this should be moved to .create
-			return OwnedEntity(self, **dict(entity))
+	def create(self, **attributes):
+		return OwnedEntity(self, **attributes)
 
-		add(self, entity)
-		for system in self.ecs_targets["system"]:
-			if any(new_attribute in r for r in system.ecs_requirements.values()):
-				add(system, entity)
-
-		return entity
-
-	def remove(self, entity, deleted_attribute=None):
-		systems = self.ecs_targets["system"]
-
-		if deleted_attribute is None:
-			entity.ecs_metasystem = None
-		else:
-			systems = [
-				s for s in [self, *systems]
-				if any(
-					deleted_attribute in r for r in s.ecs_requirements.values()
-				)
-			]
-
-		for system in systems:
-			remove(system, entity)
-
-		return entity
+	def remove(self, entity):
+		unregister_attribute(self, entity)
 
 	def update(self):
 		update(self)

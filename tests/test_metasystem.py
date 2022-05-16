@@ -26,23 +26,24 @@ def test_metasystem():
     ecs.Entity(name="Hyde"),
     ecs.Entity(name="Jackie"),
   ]:
-    metasystem.add(e)
+    metasystem.create(**dict(e))
 
   metasystem.update()
 
   assert set(processed_entities) == {"Hyde", "Jackie"}
 
 def test_dynamic_distribution():
-  processed_entities = []  # maybe a fixture for a system?
+  processed_entities = []  # TODO maybe a fixture for a system?
 
   ms = ecs.Metasystem()
 
-  @ms.add
   @ecs.create_system
-  def process(entity: "name"):
+  def test_system(entity: "name"):
     processed_entities.append(entity.name)
 
-  e = ms.add(ecs.Entity())
+  ms.create(**dict(test_system))
+
+  e = ms.create()
 
   e.name = 'Mike'
   ms.update()
