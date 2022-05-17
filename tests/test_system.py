@@ -39,7 +39,7 @@ def test_add_forms_ecs_targets(pairs_system):
 
 
 def test_update_bruteforces_entities(pairs_system):
-  people = [
+  npcs = [
     ecs.Entity(name='Eric'),
     ecs.Entity(name='Red'),
     ecs.Entity(name='Kitty'),
@@ -47,8 +47,8 @@ def test_update_bruteforces_entities(pairs_system):
 
   container = ecs.Entity(pairs=[])
 
-  pairs_system.ecs_targets['first'] |= set(people)
-  pairs_system.ecs_targets['second'] |= set(people)
+  pairs_system.ecs_targets['first'] |= set(npcs)
+  pairs_system.ecs_targets['second'] |= set(npcs)
   pairs_system.ecs_targets['container'].add(container)
 
   ecs.core.update(pairs_system)

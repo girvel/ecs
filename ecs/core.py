@@ -155,6 +155,7 @@ class Metasystem(Entity):
 
 		return OwnedEntity(
 			self,
+			name=protosystem.__name__,
 			process=protosystem,
 			ecs_targets={
 				member_name: set() for member_name in protosystem.__annotations__
