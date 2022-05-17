@@ -135,6 +135,7 @@ class Metasystem(Entity):
 		self.ecs_requirements = {
 			'system': {'process', 'ecs_requirements', 'ecs_targets'}
 		}
+		self.name = 'metasystem'
 
 	def process(self, system):
 		update(system)
