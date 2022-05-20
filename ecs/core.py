@@ -41,7 +41,7 @@ def add(system, entity):
 
 def remove(system, entity):
 	for targets in system.ecs_targets.values():
-		targets.remove(entity)
+		targets.discard(entity)
 
 
 def update(system):
@@ -54,7 +54,7 @@ def update(system):
 			return
 
 		if len(system.ecs_targets[keys[i]]) > 0:
-			for target in system.ecs_targets[keys[i]]:
+			for target in system.ecs_targets[keys[i]].copy():
 				members[keys[i]] = target
 				_update(members)
 
