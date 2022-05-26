@@ -43,7 +43,6 @@ def remove(system, entity):
 	for targets in system.ecs_targets.values():
 		targets.discard(entity)
 
-
 def update(system):
 	keys = list(system.ecs_targets.keys())
 
@@ -62,7 +61,6 @@ def update(system):
 
 	return _update({})
 
-
 def register_attribute(metasystem, entity, attribute):
 	add(metasystem, entity)
 	for system in metasystem.ecs_targets["system"]:
@@ -70,7 +68,6 @@ def register_attribute(metasystem, entity, attribute):
 			add(system, entity)
 
 	return entity
-
 
 def unregister_attribute(metasystem, entity, attribute=None):
 	systems = [metasystem, *metasystem.ecs_targets["system"]]
@@ -89,7 +86,6 @@ def unregister_attribute(metasystem, entity, attribute=None):
 		remove(system, entity)
 
 	return entity
-
 
 def create_system(protosystem) -> Entity:
 	"""Creates system from an annotated function
