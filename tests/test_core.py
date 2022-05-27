@@ -3,7 +3,7 @@ import pytest
 
 
 class TestEntity:
-    def test_creates_anonymous_object(self):
+    def test_is_anonymous_object(self):
         entity = ecs.Entity(
             name='custom-entity',
             some_parameter=42,
@@ -12,8 +12,7 @@ class TestEntity:
         assert entity.name == 'custom-entity'
         assert entity.some_parameter == 42
 
-
-    def test_is_lua_style_object(self):
+    def test_attribute_is_item(self):
         entity = ecs.Entity()
 
         entity['first_field'] = 1
@@ -25,7 +24,7 @@ class TestEntity:
         assert entity['Third field'] == 3
         assert 'Third field' in entity
 
-    def test_is_easily_convertible_to_a_dict(self):
+    def test_converts_to_dict(self):
         assert dict(ecs.Entity(a=1, b=2)) == {'a': 1, 'b': 2}
 
     def test_is_iterable(self):
@@ -43,29 +42,29 @@ class TestCreateSystem:
         assert system.ecs_targets is not None
 
 
-class TestSystem:
-    @pytest.fixture
-    def pairs_system(self):
-        class PairsSystem(ecs.Entity):
-            ecs_targets = dict(
-                first=set(),
-                second=set(),
-                container=set(),
-            )
+@pytest.fixture
+def pairs_system():
+    class PairsSystem(ecs.Entity):
+        ecs_targets = dict(
+            first=set(),
+            second=set(),
+            container=set(),
+        )
 
-            ecs_requirements = dict(
-                first={'name'},
-                second={'name'},
-                container={'pairs'},
-            )
+        ecs_requirements = dict(
+            first={'name'},
+            second={'name'},
+            container={'pairs'},
+        )
 
-            def process(self, first, second, container):
-                container.pairs.append("{} & {}".format(first.name, second.name))
+        def process(self, first, second, container):
+            container.pairs.append("{} & {}".format(first.name, second.name))
 
-        return PairsSystem()
+    return PairsSystem()
 
 
-    def test_add_forms_ecs_targets(self, pairs_system):
+class TestAdd:
+    def test_adds_targets(self, pairs_system):
         entities = [
             ecs.Entity(name='entity1'),
             ecs.Entity(name='entity2', something='123'),
@@ -75,11 +74,21 @@ class TestSystem:
         for e in entities:
             ecs.add(pairs_system, e)
 
-        assert set(pairs_system.ecs_targets['first'])    == set(entities[:2])
+        assert set(pairs_system.ecs_targets['first'])  == set(entities[:2])
         assert set(pairs_system.ecs_targets['second']) == set(entities[:2])
 
+    def test_is_repetition_safe(self, pairs_system):
+        e = ecs.Entity(name='entity1')
 
-    def test_update_bruteforces_entities(self, pairs_system):
+        ecs.add(pairs_system, e)
+        ecs.add(pairs_system, e)
+
+        assert len(pairs_system.ecs_targets['first']) == 1
+        assert len(pairs_system.ecs_targets['second']) == 1
+
+
+class TestUpdate:
+    def test_bruteforces_entities(self, pairs_system):
         npcs = [
             ecs.Entity(name='Eric'),
             ecs.Entity(name='Red'),
@@ -95,14 +104,14 @@ class TestSystem:
         ecs.update(pairs_system)
 
         assert set(container.pairs) == {
-            'Eric & Eric',    'Eric & Red',    'Eric & Kitty',
-            'Red & Eric',     'Red & Red',     'Red & Kitty',
+            'Eric & Eric',  'Eric & Red',  'Eric & Kitty',
+            'Red & Eric',   'Red & Red',   'Red & Kitty',
             'Kitty & Eric', 'Kitty & Red', 'Kitty & Kitty',
         }
 
 
 class TestMetasystem:
-    def test_metasystem(self):
+    def test_works(self):
         processed_entities = []
 
         metasystem = ecs.Metasystem()
