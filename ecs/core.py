@@ -17,7 +17,17 @@ class Entity:
 		return delattr(self, key)
 
 	def __getitem__(self, item):
-		"""Gets an attribute with the given name."""
+		"""Gets an attribute with the given name.
+
+		Args:
+			item: a name of the attribute or a tuple (name, default_value)
+
+		Returns:
+			Attribute value or default value if specified
+		"""
+		if isinstance(item, tuple):
+			return getattr(self, *item)
+
 		return getattr(self, item)
 
 	def __setitem__(self, item, value):
@@ -33,7 +43,7 @@ class Entity:
 		return len(list(self.__iter__()))
 
 	def __repr__(self):
-		return f'Entity(name={getattr(self, "name", None)})'
+		return f'Entity(name={self["name", None]})'
 
 	def __iter__(self):
 		"""Iterates entity as pairs: (attribute_name, attribute_value)"""

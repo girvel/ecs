@@ -24,6 +24,9 @@ class TestEntity:
         assert entity['Third field'] == 3
         assert 'Third field' in entity
 
+    def test_get_attribute_with_default_value(self):
+        assert ecs.Entity()['a', 1] == 1
+
     def test_converts_to_dict(self):
         assert dict(ecs.Entity(a=1, b=2)) == {'a': 1, 'b': 2}
 
