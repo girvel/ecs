@@ -43,7 +43,22 @@ class Entity:
 		return len(list(self.__iter__()))
 
 	def __repr__(self):
-		return f'Entity(name={self["name", None]})'
+		name = self["name", None]
+
+		def pretty(x, max_length=50):
+			string = repr(x)
+			if len(string) > max_length:
+				string = string[:max_length - 3] + "..."
+			return string
+
+		return 'Entity{}({})'.format(
+			name and f" '{name}'" or "",
+			', '.join(
+				f'{key}={pretty(value)}'
+				for key, value in self
+				if key != 'name'
+			)
+		)
 
 	def __iter__(self):
 		"""Iterates entity as pairs: (attribute_name, attribute_value)"""
