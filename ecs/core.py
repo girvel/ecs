@@ -14,23 +14,23 @@ class Entity:
 
 	def __delitem__(self, key):
 		"""Deletes an attribute with the given name."""
-
 		return delattr(self, key)
 
 	def __getitem__(self, item):
 		"""Gets an attribute with the given name."""
-
 		return getattr(self, item)
 
 	def __setitem__(self, item, value):
 		"""Sets an attribute with the given name."""
-
 		return setattr(self, item, value)
 
 	def __contains__(self, item):
 		"""Checks if entity contains an attribute with the given name."""
-
 		return hasattr(self, item)
+
+	def __len__(self):
+		"""Counts number of attributes inside the entity."""
+		return len(list(self.__iter__()))
 
 	def __repr__(self):
 		return f'Entity(name={getattr(self, "name", None)})'

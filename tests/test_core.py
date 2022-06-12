@@ -30,6 +30,9 @@ class TestEntity:
     def test_is_iterable(self):
         assert list(ecs.Entity(a=1, b=2)) == [('a', 1), ('b', 2)]
 
+    def test_len(self):
+        assert len(ecs.Entity(a=1, b=2)) == 2
+
 
 class TestCreateSystem:
     def test_creation(self):
