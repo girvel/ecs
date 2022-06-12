@@ -1,5 +1,8 @@
 class Entity:
-	"""Entity represents any object inside the game"""
+	"""Entity is a mixture of dict and object.
+
+	You can access attributes as items.
+	"""
 
 	def __init__(self, **attributes):
 		"""
@@ -10,21 +13,31 @@ class Entity:
 			setattr(self, k, v)
 
 	def __delitem__(self, key):
+		"""Deletes an attribute with the given name."""
+
 		return delattr(self, key)
 
 	def __getitem__(self, item):
+		"""Gets an attribute with the given name."""
+
 		return getattr(self, item)
 
 	def __setitem__(self, item, value):
+		"""Sets an attribute with the given name."""
+
 		return setattr(self, item, value)
 
 	def __contains__(self, item):
+		"""Checks if entity contains an attribute with the given name."""
+
 		return hasattr(self, item)
 
 	def __repr__(self):
 		return f'Entity(name={getattr(self, "name", None)})'
 
 	def __iter__(self):
+		"""Iterates entity as pairs: (attribute_name, attribute_value)"""
+
 		for attr_name in dir(self):
 			if not attr_name.startswith('__') or not attr_name.endswith('__'):
 				yield attr_name, getattr(self, attr_name)
@@ -111,7 +124,8 @@ def create_system(protosystem) -> Entity:
 
 
 class OwnedEntity(Entity):
-	"""Represents an entity, that belongs to some metasystem"""
+	"""Represents an entity that belongs to some metasystem."""
+
 	def __init__(self, metasystem, /, **attributes):
 		self.ecs_metasystem = metasystem
 		super().__init__(**attributes)
@@ -126,6 +140,10 @@ class OwnedEntity(Entity):
 
 
 class Metasystem(Entity):
+	"""Metasystem is a system that brute-forces systems and a facade to all
+	interactions with the game.
+	"""
+
 	def __init__(self):
 		self.ecs_targets = {'system': set(),}
 		self.ecs_requirements = {
@@ -137,17 +155,39 @@ class Metasystem(Entity):
 		update(system)
 
 	def create(self, **attributes):
+		"""Creates in-game entity.
+
+		Args:
+			**attributes: attributes (components) that entity will contain
+
+		Returns:
+			In-game entity
+		"""
+
 		return OwnedEntity(self, **attributes)
 
+	def delete(self, entity):
+		"""Removes entity from the game.
+
+		Args:
+			entity: in-game entity to be removed
+		"""
+
+		unregister_attribute(self, entity)
+
+	def update(self):
+		"""Updates all the systems once."""
+
+		update(self)
+
 	def create_system(self, protosystem):
-		"""Creates system from an annotated function and adds it to the world
+		"""Creates system from an annotated function and adds it to the world.
 
 		Args:
 			protosystem: function annotated in ECS style
 
 		Returns:
-			New owned entity with `process`, `ecs_targets` and
-			`ecs_requirements` fields
+			New owned entity with `process`, `ecs_targets` and `ecs_requirements` fields
 		"""
 
 		return OwnedEntity(
@@ -163,9 +203,3 @@ class Metasystem(Entity):
 				in protosystem.__annotations__.items()
 			}
 		)
-
-	def remove(self, entity):
-		unregister_attribute(self, entity)
-
-	def update(self):
-		update(self)
