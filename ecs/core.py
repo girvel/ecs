@@ -1,3 +1,6 @@
+import inspect
+
+
 def pretty(x, max_length=50):
 	if isinstance(x, Entity):
 		return ('name' in x
@@ -101,7 +104,18 @@ def update(system):
 	def _update(members):
 		i = len(members)
 		if i == len(keys):
-			system.process(**members)
+			if inspect.isgeneratorfunction(system.process):
+				tuple_members = tuple(members)
+				if tuple_members not in system.ecs_generators:
+					system.ecs_generators[tuple_members] \
+						= system.process(**members)
+
+				try:
+					next(system.ecs_generators[tuple_members])
+				except StopIteration:
+					del system.ecs_generators[tuple_members]
+			else:
+				system.process(**members)
 			return
 
 		if len(system.ecs_targets[keys[i]]) > 0:
@@ -149,7 +163,7 @@ def create_system(protosystem) -> Entity:
 		New entity with `process`, `ecs_targets` and `ecs_requirements` fields
 	"""
 
-	return Entity(
+	result = Entity(
 		process=protosystem,
 		ecs_targets={
 			member_name: set() for member_name in protosystem.__annotations__
@@ -160,6 +174,11 @@ def create_system(protosystem) -> Entity:
 			in protosystem.__annotations__.items()
 		}
 	)
+
+	if inspect.isgeneratorfunction(protosystem):
+		result.ecs_generators = {}
+
+	return result
 
 
 class OwnedEntity(Entity):
@@ -229,7 +248,7 @@ class Metasystem(Entity):
 			New owned entity with `process`, `ecs_targets` and `ecs_requirements` fields
 		"""
 
-		return OwnedEntity(
+		result = OwnedEntity(
 			self,
 			name=protosystem.__name__,
 			process=protosystem,
@@ -242,3 +261,8 @@ class Metasystem(Entity):
 				in protosystem.__annotations__.items()
 			}
 		)
+
+		if inspect.isgeneratorfunction(protosystem):
+			result.ecs_generators = {}
+
+		return result

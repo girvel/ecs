@@ -1,3 +1,5 @@
+import asyncio
+
 import ecs.core as ecs
 import pytest
 
@@ -168,3 +170,22 @@ class TestMetasystem:
         ms.update()
         assert processed_entities == ['Mike']
 
+    def test_yield(self):
+        ms = ecs.Metasystem()
+
+        @ms.create_system
+        def wait_for_condition(e: 'flag'):
+            while not e.flag: yield
+            e.success = True
+
+        @ms.create_system
+        def activate_flag(e: 'flag'):
+            e.flag = True
+
+        entities = [ms.create(flag=False, success=False) for _ in range(10)]
+
+        ms.update()
+        assert all(not e.success for e in entities)
+
+        ms.update()
+        assert all(e.success for e in entities)
