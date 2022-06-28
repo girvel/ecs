@@ -105,7 +105,7 @@ def update(system):
 		i = len(members)
 		if i == len(keys):
 			if inspect.isgeneratorfunction(system.process):
-				tuple_members = tuple(members)
+				tuple_members = tuple(members.values())
 				if tuple_members not in system.ecs_generators:
 					system.ecs_generators[tuple_members] \
 						= system.process(**members)
