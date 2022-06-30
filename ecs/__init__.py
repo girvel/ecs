@@ -7,8 +7,8 @@ metasystem, which is a system that launches other systems and is basically a
 facade for all important interactions with the game.
 """
 
-from .core import Entity, Metasystem
+from .core import Entity, OwnedEntity, Metasystem, create_system
 
 __all__ = [e.__name__ for e in [
-  Entity, Metasystem,
+  Entity, OwnedEntity, Metasystem, create_system,
 ]]

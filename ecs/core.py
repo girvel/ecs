@@ -1,24 +1,6 @@
 import inspect
 
-
-def pretty(x, max_length=50):
-	if isinstance(x, Entity):
-		return ('name' in x
-			and short(x.name)
-			or f"<Entity l={len(x)}>"
-		)
-
-	if any(isinstance(x, primitive) for primitive in [int, float, str]):
-		return short(repr(x))
-
-	return f"<{short(type(x).__name__)}>"
-
-
-def short(string, max_length=50):
-	string = str(string)
-	if len(string) > max_length:
-		string = string[:max_length - 3] + "..."
-	return string
+from lib.ecs.ecs.formatting import pretty
 
 
 class Entity:
@@ -85,6 +67,21 @@ class Entity:
 				yield attr_name, getattr(self, attr_name)
 
 
+class OwnedEntity(Entity):
+	"""Represents an entity that belongs to some metasystem."""
+
+	def __setattr__(self, key, value):
+		super().__setattr__(key, value)
+
+		if '__metasystem__' in self:
+			register_attribute(self.__metasystem__, self, key)
+
+	def __delattr__(self, item):
+		super().__delattr__(item)
+		if '__metasystem__' in self:
+			unregister_attribute(self.__metasystem__, self, item)
+
+
 def add(system, entity):
 	assert all(hasattr(system, a) for a in (
 		'process', 'ecs_targets', 'ecs_requirements'
@@ -92,11 +89,14 @@ def add(system, entity):
 
 	for member_name, requirements in system.ecs_requirements.items():
 		if all(p in entity for p in requirements):
-			system.ecs_targets[member_name].add(entity)
+			targets = system.ecs_targets[member_name]
+			if entity not in targets:
+				targets.append(entity)
 
 def remove(system, entity):
 	for targets in system.ecs_targets.values():
-		targets.discard(entity)
+		if entity in targets:
+			targets.remove(entity)
 
 def update(system):
 	keys = list(system.ecs_targets.keys())
@@ -139,7 +139,7 @@ def unregister_attribute(metasystem, entity, attribute=None):
 	systems = [metasystem, *metasystem.ecs_targets["system"]]
 
 	if attribute is None:
-		entity.ecs_metasystem = None
+		entity.__metasystem__ = None
 	else:
 		systems = [
 			s for s in systems
@@ -153,7 +153,7 @@ def unregister_attribute(metasystem, entity, attribute=None):
 
 	return entity
 
-def create_system(protosystem) -> Entity:
+def create_system(protosystem) -> OwnedEntity:
 	"""Creates system from an annotated function
 
 	Args:
@@ -163,10 +163,11 @@ def create_system(protosystem) -> Entity:
 		New entity with `process`, `ecs_targets` and `ecs_requirements` fields
 	"""
 
-	result = Entity(
+	result = OwnedEntity(
+		name=protosystem.__name__,
 		process=protosystem,
 		ecs_targets={
-			member_name: set() for member_name in protosystem.__annotations__
+			member_name: [] for member_name in protosystem.__annotations__
 		},
 		ecs_requirements={
 			member_name: set(annotation.split(', '))
@@ -181,20 +182,8 @@ def create_system(protosystem) -> Entity:
 	return result
 
 
-class OwnedEntity(Entity):
-	"""Represents an entity that belongs to some metasystem."""
-
-	def __init__(self, metasystem, /, **attributes):
-		self.ecs_metasystem = metasystem
-		super().__init__(**attributes)
-
-	def __setattr__(self, key, value):
-		super().__setattr__(key, value)
-		register_attribute(self.ecs_metasystem, self, key)
-
-	def __delattr__(self, item):
-		super().__delattr__(item)
-		unregister_attribute(self.ecs_metasystem, self, item)
+class OwnershipException(Exception):
+	pass
 
 
 class Metasystem(Entity):
@@ -203,7 +192,7 @@ class Metasystem(Entity):
 	"""
 
 	def __init__(self):
-		self.ecs_targets = {'system': set(),}
+		self.ecs_targets = {'system': [],}
 		self.ecs_requirements = {
 			'system': {'process', 'ecs_requirements', 'ecs_targets'}
 		}
@@ -222,7 +211,22 @@ class Metasystem(Entity):
 			In-game entity
 		"""
 
-		return OwnedEntity(self, **attributes)
+		return self.add(OwnedEntity(**attributes))
+
+	def add(self, entity):
+		"""Adds an entity to the metasystem; adds __metasystem__ attribute."""
+
+		if '__metasystem__' in entity:
+			raise OwnershipException(
+				"Entity {entity} is already belongs to a metasystem"
+			)
+
+		entity.__metasystem__ = self
+
+		for attribute, _ in entity:
+			register_attribute(self, entity, attribute)
+
+		return entity
 
 	def delete(self, entity):
 		"""Removes entity from the game.
@@ -237,32 +241,3 @@ class Metasystem(Entity):
 		"""Updates all the systems once."""
 
 		update(self)
-
-	def create_system(self, protosystem):
-		"""Creates system from an annotated function and adds it to the world.
-
-		Args:
-			protosystem: function annotated in ECS style
-
-		Returns:
-			New owned entity with `process`, `ecs_targets` and `ecs_requirements` fields
-		"""
-
-		result = OwnedEntity(
-			self,
-			name=protosystem.__name__,
-			process=protosystem,
-			ecs_targets={
-				member_name: set() for member_name in protosystem.__annotations__
-			},
-			ecs_requirements={
-				member_name: set(annotation.split(', '))
-				for member_name, annotation
-				in protosystem.__annotations__.items()
-			}
-		)
-
-		if inspect.isgeneratorfunction(protosystem):
-			result.ecs_generators = {}
-
-		return result

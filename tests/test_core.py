@@ -1,5 +1,3 @@
-import asyncio
-
 import ecs.core as ecs
 import pytest
 
@@ -38,6 +36,9 @@ class TestEntity:
     def test_len(self):
         assert len(ecs.Entity(a=1, b=2)) == 2
 
+    def test_repr(self):
+        print(repr(ecs.Entity(a=1)))
+
 
 class TestCreateSystem:
     def test_creation(self):
@@ -54,9 +55,9 @@ class TestCreateSystem:
 def pairs_system():
     class PairsSystem(ecs.Entity):
         ecs_targets = dict(
-            first=set(),
-            second=set(),
-            container=set(),
+            first=[],
+            second=[],
+            container=[],
         )
 
         ecs_requirements = dict(
@@ -105,9 +106,9 @@ class TestUpdate:
 
         container = ecs.Entity(pairs=[])
 
-        pairs_system.ecs_targets['first'] |= set(npcs)
-        pairs_system.ecs_targets['second'] |= set(npcs)
-        pairs_system.ecs_targets['container'].add(container)
+        pairs_system.ecs_targets['first'] += npcs
+        pairs_system.ecs_targets['second'] += npcs
+        pairs_system.ecs_targets['container'] += [container]
 
         ecs.update(pairs_system)
 
@@ -126,7 +127,7 @@ class TestMetasystem:
 
         class system(ecs.Entity):
             ecs_targets = dict(
-                entity=set()
+                entity=[]
             )
 
             ecs_requirements = dict(
@@ -143,7 +144,7 @@ class TestMetasystem:
             ecs.Entity(name="Hyde"),
             ecs.Entity(name="Jackie"),
         ]:
-            metasystem.create(**dict(e))
+            metasystem.add(e)
 
         metasystem.update()
 
@@ -155,36 +156,39 @@ class TestMetasystem:
         ms = ecs.Metasystem()
 
         @ecs.create_system
-        def test_system(entity: "name"):
-            processed_entities.append(entity.name)
+        def test_system(entity: "name_"):
+            processed_entities.append(entity.name_)
 
         ms.create(**dict(test_system))
 
         e = ms.create()
 
-        e.name = 'Mike'
+        e.name_ = 'Mike'
         ms.update()
         assert processed_entities == ['Mike']
 
-        del e.name
+        del e.name_
         ms.update()
         assert processed_entities == ['Mike']
 
     def test_yield(self):
         ms = ecs.Metasystem()
 
-        @ms.create_system
+        @ms.add
+        @ecs.create_system
         def wait_for_condition(e: 'flag'):
             while not e.flag: yield
             e.success = True
 
-        @ms.create_system
+        @ms.add
+        @ecs.create_system
         def activate_flag(e: 'flag'):
             e.flag = True
 
         entities = [ms.create(flag=False, success=False) for _ in range(10)]
 
         ms.update()
+        print(entities)
         assert all(not e.success for e in entities)
 
         ms.update()
