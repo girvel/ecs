@@ -1,24 +1,19 @@
-from .entity import Entity
-from .essentials import update, register_attribute, unregister_attribute
 from .owned_entity import OwnedEntity, OwnershipException
+from .system import create_system
+from .essentials import update, register_attribute, unregister_attribute
 
 
-class Metasystem(Entity):
-    """Metasystem is a system that brute-forces systems and a facade to all
-    interactions with the game.
-    """
+class Metasystem:
+    """Facade fora metasystem and all interactions with the game."""
 
     def __init__(self):
-        self.ecs_targets = {'system': [],}
-        self.ecs_requirements = {
-            'system': {'process', 'ecs_requirements', 'ecs_targets'}
-        }
-        self.name = 'metasystem'
+        """Initializes a new game; creates a metasystem."""
+        def metasystem(system: 'process, ecs_requirements, ecs_targets'):
+            update(system)
 
-    def process(self, system):
-        update(system)
+        self._metasystem = create_system(metasystem)
 
-    def create(self, **attributes):
+    def create(self, **attributes) -> OwnedEntity:
         """Creates in-game entity.
 
         Args:
@@ -27,21 +22,27 @@ class Metasystem(Entity):
         Returns:
             In-game entity
         """
-
         return self.add(OwnedEntity(**attributes))
 
-    def add(self, entity):
-        """Adds an entity to the metasystem; adds __metasystem__ attribute."""
+    def add(self, entity: OwnedEntity) -> OwnedEntity:
+        """Adds an entity to the metasystem; adds __metasystem__ attribute.
+
+        Args:
+            entity: entity to be added
+
+        Returns:
+            The same entity
+        """
 
         if '__metasystem__' in entity:
             raise OwnershipException(
                 "Entity {entity} is already belongs to a metasystem"
             )
 
-        entity.__metasystem__ = self
+        entity.__metasystem__ = self._metasystem
 
         for attribute, _ in entity:
-            register_attribute(self, entity, attribute)
+            register_attribute(self._metasystem, entity, attribute)
 
         return entity
 
@@ -51,10 +52,8 @@ class Metasystem(Entity):
         Args:
             entity: in-game entity to be removed
         """
-
-        unregister_attribute(self, entity)
+        unregister_attribute(self._metasystem, entity)
 
     def update(self):
         """Updates all the systems once."""
-
-        update(self)
+        update(self._metasystem)
