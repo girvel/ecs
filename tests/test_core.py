@@ -155,11 +155,10 @@ class TestMetasystem:
 
         ms = ecs.Metasystem()
 
+        @ms.add
         @ecs.create_system
         def test_system(entity: "name_"):
             processed_entities.append(entity.name_)
-
-        ms.create(**dict(test_system))
 
         e = ms.create()
 
