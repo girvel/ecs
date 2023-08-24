@@ -3,10 +3,10 @@ from pathlib import Path
 
 setuptools.setup(
   name="ecs-girvel",
-  version="0.1.0",
+  version="1.0.0",
   author="Nikita Girvel Dobrynin",
   author_email="widauka@ya.ru",
-  description="My own ECS framework",
+  description="Annotation-based asynchronous ECS library",
   url="https://github.com/girvel/ecs",
   classifiers=[
     "Programming Language :: Python :: 3",
