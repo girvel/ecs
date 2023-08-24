@@ -105,7 +105,7 @@ def unregister_attribute(
     systems = [metasystem, *metasystem.ecs_targets["system"]]
 
     if attribute is None:
-        entity.__metasystem__ = None
+        del entity.__metasystem__
     else:
         systems = [
             s for s in systems

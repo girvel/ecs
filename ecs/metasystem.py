@@ -52,6 +52,7 @@ class Metasystem:
         Args:
             entity: in-game entity to be removed
         """
+        assert "__metasystem__" in entity, "Entity should belong to the metasystem to be deleted from it"
         unregister_attribute(self._metasystem, entity)
 
     def update(self):
