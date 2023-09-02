@@ -27,7 +27,7 @@ class Metasystem:
         return self.add(OwnedEntity(**attributes))
 
     T = TypeVar("T")
-    def add(self, entity: T) -> T:
+    def add(self, entity: T, **attributes) -> T:
         """Adds an entity to the metasystem; adds __metasystem__ attribute.
 
         Args:
@@ -36,6 +36,9 @@ class Metasystem:
         Returns:
             The same entity
         """
+
+        for name, value in attributes.items():
+            entity[name] = value
 
         if '__metasystem__' in entity:
             raise OwnershipException(
