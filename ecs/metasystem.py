@@ -1,10 +1,12 @@
+from typing import TypeVar
+
 from .owned_entity import OwnedEntity, OwnershipException
 from .system import create_system
 from .essentials import update, register_attribute, unregister_attribute
 
 
 class Metasystem:
-    """Facade fora metasystem and all interactions with the game."""
+    """Facade for a metasystem and all interactions with the game."""
 
     def __init__(self):
         """Initializes a new game; creates a metasystem."""
@@ -24,7 +26,8 @@ class Metasystem:
         """
         return self.add(OwnedEntity(**attributes))
 
-    def add(self, entity: OwnedEntity) -> OwnedEntity:
+    T = TypeVar("T")
+    def add(self, entity: T) -> T:
         """Adds an entity to the metasystem; adds __metasystem__ attribute.
 
         Args:
@@ -46,7 +49,7 @@ class Metasystem:
 
         return entity
 
-    def delete(self, entity):
+    def delete(self, entity: OwnedEntity) -> None:
         """Removes entity from the game.
 
         Args:
@@ -55,6 +58,6 @@ class Metasystem:
         assert "__metasystem__" in entity, "Entity should belong to the metasystem to be deleted from it"
         unregister_attribute(self._metasystem, entity)
 
-    def update(self):
+    def update(self) -> None:
         """Updates all the systems once."""
         update(self._metasystem)
