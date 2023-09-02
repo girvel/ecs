@@ -1,5 +1,4 @@
 import setuptools
-from pathlib import Path
 
 setuptools.setup(
   name="ecs-girvel",
