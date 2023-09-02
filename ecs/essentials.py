@@ -31,7 +31,8 @@ def remove(system: oe.OwnedEntity, entity: oe.OwnedEntity):
     """
 
     for targets in system.ecs_targets.values():
-        targets.remove(entity)
+        if entity in targets:
+            targets.remove(entity)
 
 
 def update(system: oe.OwnedEntity):
