@@ -59,7 +59,3 @@ while True:
     ms.update()
     time.sleep(dt)
 ```
-
-## Installation
-
-I recommend you build from sources, version in pypi is old.
