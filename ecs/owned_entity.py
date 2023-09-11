@@ -19,3 +19,8 @@ class OwnedEntity(Entity):
 
 class OwnershipException(Exception):
     pass
+
+
+def exists(entity: OwnedEntity) -> bool:
+    """Determines whether entity belongs to any metasystem."""
+    return "__metasystem__" in entity
