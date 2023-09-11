@@ -8,10 +8,10 @@ facade for all important interactions with the game.
 """
 
 from .entity import Entity
-from .owned_entity import OwnedEntity
+from .owned_entity import OwnedEntity, exists
 from .metasystem import Metasystem
 from .system import create_system
 
 __all__ = [e.__name__ for e in [
-  Entity, OwnedEntity, Metasystem, create_system,
+  Entity, OwnedEntity, Metasystem, create_system, exists,
 ]]
