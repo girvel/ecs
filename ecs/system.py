@@ -1,9 +1,10 @@
 import inspect
+from typing import Callable
 
 from .owned_entity import OwnedEntity
 
 
-def create_system(protosystem) -> OwnedEntity:
+def create_system(protosystem: Callable[..., None]) -> OwnedEntity:
     """Creates system from an annotated function
 
     Args:
@@ -12,7 +13,22 @@ def create_system(protosystem) -> OwnedEntity:
     Returns:
         New entity with `process`, `ecs_targets` and `ecs_requirements` fields
     """
+    return _create_system(protosystem, False)
 
+
+def create_multicore_system(protosystem: Callable[..., None]) -> OwnedEntity:
+    """Creates system from an annotated function, that will use multiprocessing
+
+    Args:
+        protosystem: function annotated in ECS style
+
+    Returns:
+        New entity with `process`, `ecs_targets` and `ecs_requirements` fields
+    """
+    return _create_system(protosystem, True)
+
+
+def _create_system(protosystem, multicore):
     result = OwnedEntity(
         name=protosystem.__name__,
         process=protosystem,
@@ -23,7 +39,8 @@ def create_system(protosystem) -> OwnedEntity:
             member_name: set(annotation.split(', '))
             for member_name, annotation
             in protosystem.__annotations__.items()
-        }
+        },
+        multicore=multicore
     )
 
     if inspect.isgeneratorfunction(protosystem):
