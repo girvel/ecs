@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import inspect
+import itertools
+
 from . import owned_entity as oe
 
 
@@ -41,33 +43,17 @@ def update(system: oe.OwnedEntity):
     Calls a system.process with each possible combination of targets.
     """
 
-    keys = list(system.ecs_targets.keys())
+    for args in itertools.product(*system.ecs_targets.values()):
+        if inspect.isgeneratorfunction(system.process):
+            if args not in system.ecs_generators:
+                system.ecs_generators[args] = system.process(*args)
 
-    def _update(members):
-        i = len(members)
-        if i == len(keys):
-            if inspect.isgeneratorfunction(system.process):
-                tuple_members = tuple(members.values())
-                if tuple_members not in system.ecs_generators:
-                    system.ecs_generators[tuple_members] \
-                        = system.process(**members)
-
-                try:
-                    next(system.ecs_generators[tuple_members])
-                except StopIteration:
-                    del system.ecs_generators[tuple_members]
-            else:
-                system.process(**members)
-            return
-
-        if len(system.ecs_targets[keys[i]]) > 0:
-            for target in system.ecs_targets[keys[i]].copy():
-                members[keys[i]] = target
-                _update(members)
-
-            del members[keys[i]]
-
-    return _update({})
+            try:
+                next(system.ecs_generators[args])
+            except StopIteration:
+                del system.ecs_generators[args]
+        else:
+            system.process(*args)
 
 
 def register_attribute(
