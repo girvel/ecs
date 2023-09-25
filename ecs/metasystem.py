@@ -1,6 +1,7 @@
 from typing import TypeVar
 
-from .owned_entity import OwnedEntity, OwnershipException
+from . import DynamicEntity
+from .dynamic_entity import DynamicEntity
 from .system import create_system
 from .essentials import update, register_attribute, unregister_attribute
 
@@ -15,7 +16,7 @@ class Metasystem:
 
         self._metasystem = create_system(metasystem)
 
-    def create(self, **attributes) -> OwnedEntity:
+    def create(self, **attributes) -> DynamicEntity:
         """Creates in-game entity.
 
         Args:
@@ -24,7 +25,7 @@ class Metasystem:
         Returns:
             In-game entity
         """
-        return self.add(OwnedEntity(**attributes))
+        return self.add(DynamicEntity(**attributes))
 
     T = TypeVar("T")
     def add(self, entity: T, **attributes) -> T:
@@ -52,7 +53,7 @@ class Metasystem:
 
         return entity
 
-    def delete(self, entity: OwnedEntity) -> None:
+    def delete(self, entity: DynamicEntity) -> None:
         """Removes entity from the game.
 
         Args:
@@ -64,3 +65,12 @@ class Metasystem:
     def update(self) -> None:
         """Updates all the systems once."""
         update(self._metasystem)
+
+
+class OwnershipException(Exception):
+    pass
+
+
+def exists(entity: DynamicEntity) -> bool:
+    """Determines whether entity belongs to any metasystem."""
+    return "__metasystem__" in entity

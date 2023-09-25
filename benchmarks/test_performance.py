@@ -1,9 +1,18 @@
 import random
+from dataclasses import dataclass
 
-from ecs import Metasystem, create_system, create_multicore_system
+import pytest
+
+from ecs import Metasystem, create_system, Entity, StaticEntity
 
 
-def test_update(benchmark):
+@dataclass
+class StaticExample(StaticEntity):
+    value: int
+
+
+@pytest.mark.parametrize("entity_type", [Entity, StaticExample])
+def test_update(benchmark, entity_type):
     ms = Metasystem()
 
     @ms.add
@@ -12,7 +21,7 @@ def test_update(benchmark):
         e.value += 1
 
     for _ in range(1_000):
-        ms.create(value=random.randrange(1000, 9999))
+        ms.add(entity_type(value=random.randrange(1000, 9999)))
 
     @benchmark
     def _():

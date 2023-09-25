@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import itertools
 
-from . import owned_entity as oe
+from . import dynamic_entity as oe
 
 
-def add(system: oe.OwnedEntity, entity: oe.OwnedEntity):
+def add(system: oe.DynamicEntity, entity: oe.DynamicEntity):
     """Tries to register entity as a system target.
 
     Succeeds if entity has all the required fields to be a target for the
@@ -25,7 +25,7 @@ def add(system: oe.OwnedEntity, entity: oe.OwnedEntity):
                 targets.append(entity)
 
 
-def remove(system: oe.OwnedEntity, entity: oe.OwnedEntity):
+def remove(system: oe.DynamicEntity, entity: oe.DynamicEntity):
     """Tries to unregister entity from a system.
 
     Guarantees that the entity will no longer be processed by the system.
@@ -36,7 +36,7 @@ def remove(system: oe.OwnedEntity, entity: oe.OwnedEntity):
             targets.remove(entity)
 
 
-def update(system: oe.OwnedEntity):
+def update(system: oe.DynamicEntity):
     """Launches a system one time.
 
     Calls a system.process with each possible combination of targets.
@@ -46,7 +46,7 @@ def update(system: oe.OwnedEntity):
 
 
 def register_attribute(
-    metasystem: oe.OwnedEntity, entity: oe.OwnedEntity, attribute: str
+    metasystem: oe.DynamicEntity, entity: oe.DynamicEntity, attribute: str
 ):
     """Notifies systems that the entity gained new attribute.
 
@@ -65,7 +65,7 @@ def register_attribute(
 
 
 def unregister_attribute(
-    metasystem: oe.OwnedEntity, entity: oe.OwnedEntity, attribute: str = None
+    metasystem: oe.DynamicEntity, entity: oe.DynamicEntity, attribute: str = None
 ):
     """Notifies systems that entity lost an attribute or that entity itself
     should be deleted.

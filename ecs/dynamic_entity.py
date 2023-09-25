@@ -2,7 +2,7 @@ from .entity import Entity
 from .essentials import register_attribute, unregister_attribute
 
 
-class OwnedEntity(Entity):
+class DynamicEntity(Entity):
     """Represents an entity that belongs to some metasystem."""
 
     def __setattr__(self, key, value):
@@ -15,12 +15,3 @@ class OwnedEntity(Entity):
         super().__delattr__(item)
         if '__metasystem__' in self:
             unregister_attribute(self.__metasystem__, self, item)
-
-
-class OwnershipException(Exception):
-    pass
-
-
-def exists(entity: OwnedEntity) -> bool:
-    """Determines whether entity belongs to any metasystem."""
-    return "__metasystem__" in entity

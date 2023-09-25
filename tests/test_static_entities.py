@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 import pytest
 
 from ecs import Metasystem, create_system
@@ -11,7 +9,6 @@ def test_case():
 
     ms = Metasystem()
 
-    @dataclass
     class Named(ComponentRequirement("first_name")):
         first_name: str
 
@@ -20,7 +17,6 @@ def test_case():
     def test_system(entity: Named):
         processed_entities.append(entity.first_name)
 
-    @dataclass
     class ExampleEntity(StaticEntity):
         first_name: str
         age: int = 15

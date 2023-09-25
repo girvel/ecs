@@ -2,10 +2,10 @@ import functools
 import inspect
 from typing import Callable
 
-from .owned_entity import OwnedEntity
+from .dynamic_entity import DynamicEntity
 
 
-def create_system(protosystem: Callable[..., None]) -> OwnedEntity:
+def create_system(protosystem: Callable[..., None]) -> DynamicEntity:
     """Creates system from an annotated function
 
     Args:
@@ -14,7 +14,7 @@ def create_system(protosystem: Callable[..., None]) -> OwnedEntity:
     Returns:
         New entity with `process`, `ecs_targets` and `ecs_requirements` fields
     """
-    result = OwnedEntity(
+    result = DynamicEntity(
         name=protosystem.__name__,
         ecs_targets={
             member_name: [] for member_name in protosystem.__annotations__

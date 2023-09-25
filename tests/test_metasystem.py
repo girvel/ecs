@@ -1,6 +1,6 @@
 from ecs.metasystem import Metasystem
 from ecs.system import create_system
-from ecs.owned_entity import OwnedEntity
+from ecs.dynamic_entity import DynamicEntity
 
 
 def test_works():
@@ -8,7 +8,7 @@ def test_works():
 
     metasystem = Metasystem()
 
-    class system(OwnedEntity):
+    class system(DynamicEntity):
         ecs_targets = dict(
             entity=[]
         )
@@ -24,8 +24,8 @@ def test_works():
 
     for e in [
         system,
-        OwnedEntity(name="Hyde"),
-        OwnedEntity(name="Jackie"),
+        DynamicEntity(name="Hyde"),
+        DynamicEntity(name="Jackie"),
     ]:
         metasystem.add(e)
 

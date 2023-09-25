@@ -4,7 +4,7 @@ import setuptools
 
 setuptools.setup(
   name="ecs-girvel",
-  version="1.0.8",
+  version="2.0.0",
   author="Nikita Girvel Dobrynin",
   author_email="widauka@ya.ru",
   description="Annotation-based asynchronous ECS library",
