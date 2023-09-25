@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 import itertools
 
 from . import owned_entity as oe
@@ -42,7 +41,6 @@ def update(system: oe.OwnedEntity):
 
     Calls a system.process with each possible combination of targets.
     """
-
     for args in itertools.product(*system.ecs_targets.values()):
         system.process(*args)
 

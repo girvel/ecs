@@ -14,22 +14,6 @@ def create_system(protosystem: Callable[..., None]) -> OwnedEntity:
     Returns:
         New entity with `process`, `ecs_targets` and `ecs_requirements` fields
     """
-    return _create_system(protosystem, False)
-
-
-def create_multicore_system(protosystem: Callable[..., None]) -> OwnedEntity:
-    """Creates system from an annotated function, that will use multiprocessing
-
-    Args:
-        protosystem: function annotated in ECS style
-
-    Returns:
-        New entity with `process`, `ecs_targets` and `ecs_requirements` fields
-    """
-    return _create_system(protosystem, True)
-
-
-def _create_system(protosystem, is_multicore):
     result = OwnedEntity(
         name=protosystem.__name__,
         ecs_targets={
@@ -40,7 +24,6 @@ def _create_system(protosystem, is_multicore):
             for member_name, annotation
             in protosystem.__annotations__.items()
         },
-        is_multicore=is_multicore,
     )
 
     if inspect.isgeneratorfunction(protosystem):
