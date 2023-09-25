@@ -44,16 +44,7 @@ def update(system: oe.OwnedEntity):
     """
 
     for args in itertools.product(*system.ecs_targets.values()):
-        if inspect.isgeneratorfunction(system.process):
-            if args not in system.ecs_generators:
-                system.ecs_generators[args] = system.process(*args)
-
-            try:
-                next(system.ecs_generators[args])
-            except StopIteration:
-                del system.ecs_generators[args]
-        else:
-            system.process(*args)
+        system.process(*args)
 
 
 def register_attribute(

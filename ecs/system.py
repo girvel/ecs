@@ -1,3 +1,4 @@
+import functools
 import inspect
 from typing import Callable
 
@@ -28,10 +29,9 @@ def create_multicore_system(protosystem: Callable[..., None]) -> OwnedEntity:
     return _create_system(protosystem, True)
 
 
-def _create_system(protosystem, multicore):
+def _create_system(protosystem, is_multicore):
     result = OwnedEntity(
         name=protosystem.__name__,
-        process=protosystem,
         ecs_targets={
             member_name: [] for member_name in protosystem.__annotations__
         },
@@ -40,10 +40,27 @@ def _create_system(protosystem, multicore):
             for member_name, annotation
             in protosystem.__annotations__.items()
         },
-        multicore=multicore
+        is_multicore=is_multicore,
     )
 
     if inspect.isgeneratorfunction(protosystem):
         result.ecs_generators = {}
+        result.process = _generate_async_process(result, protosystem)
+    else:
+        result.process = protosystem
+
+    return result
+
+
+def _generate_async_process(system, protosystem):
+    @functools.wraps(protosystem)
+    def result(*args):
+        if args not in system.ecs_generators:
+            system.ecs_generators[args] = protosystem(*args)
+
+        try:
+            next(system.ecs_generators[args])
+        except StopIteration:
+            del system.ecs_generators[args]
 
     return result
