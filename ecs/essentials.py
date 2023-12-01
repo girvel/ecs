@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import itertools
+from typing import TYPE_CHECKING
 
-from . import dynamic_entity as oe
+if TYPE_CHECKING:
+    from .entity import Entity
+    from .system import System
 
 
-def add(system: oe.DynamicEntity, entity: oe.DynamicEntity):
+def add(system: "System", entity: "Entity"):
     """Tries to register entity as a system target.
 
     Succeeds if entity has all the required fields to be a target for the
@@ -14,18 +17,14 @@ def add(system: oe.DynamicEntity, entity: oe.DynamicEntity):
     times.
     """
 
-    assert all(hasattr(system, a) for a in (
-        'process', 'ecs_targets', 'ecs_requirements'
-    ))
-
     for member_name, requirements in system.ecs_requirements.items():
-        if all(p in entity for p in requirements):
+        if all(hasattr(entity, attribute) for attribute in requirements):
             targets = system.ecs_targets[member_name]
             if entity not in targets:
                 targets.append(entity)
 
 
-def remove(system: oe.DynamicEntity, entity: oe.DynamicEntity):
+def remove(system: "System", entity: "Entity"):
     """Tries to unregister entity from a system.
 
     Guarantees that the entity will no longer be processed by the system.
@@ -36,17 +35,18 @@ def remove(system: oe.DynamicEntity, entity: oe.DynamicEntity):
             targets.remove(entity)
 
 
-def update(system: oe.DynamicEntity):
+def update(system: "System"):
     """Launches a system one time.
 
-    Calls a system.process with each possible combination of targets.
+    Calls a system.ecs_process with each possible combination of targets.
     """
+
     for args in itertools.product(*system.ecs_targets.values()):
-        system.process(*args)
+        system.ecs_process(*args)
 
 
 def register_attribute(
-    metasystem: oe.DynamicEntity, entity: oe.DynamicEntity, attribute: str
+    metasystem: "System", entity: "Entity", attribute: str
 ):
     """Notifies systems that the entity gained new attribute.
 
@@ -61,11 +61,9 @@ def register_attribute(
         if any(attribute in r for r in system.ecs_requirements.values()):
             add(system, entity)
 
-    return entity
-
 
 def unregister_attribute(
-    metasystem: oe.DynamicEntity, entity: oe.DynamicEntity, attribute: str = None
+    metasystem: "System", entity: "Entity", attribute: str | None = None
 ):
     """Notifies systems that entity lost an attribute or that entity itself
     should be deleted.
@@ -73,20 +71,17 @@ def unregister_attribute(
     Args:
         metasystem: metasystem itself, not a facade
         entity: entity that lost an attribute or should be deleted
-        attribute: name of the attribute or None if entity itself should be
-            deleted
+        attribute: name of the attribute or None if entity itself should be deleted
     """
 
     systems = [metasystem, *metasystem.ecs_targets["system"]]
 
     if attribute is None:
-        del entity.__metasystem__
+        entity.__metasystem__ = None
     else:
         systems = [
             s for s in systems
-            if any(
-                attribute in r for r in s.ecs_requirements.values()
-            )
+            if any(attribute in r for r in s.ecs_requirements.values())
         ]
 
     for system in systems:

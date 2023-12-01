@@ -1,6 +1,6 @@
 from ecs.metasystem import Metasystem
 from ecs.system import create_system
-from ecs.dynamic_entity import DynamicEntity
+from ecs.entity import DynamicEntity
 
 
 def test_works():

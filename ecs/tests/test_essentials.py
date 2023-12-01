@@ -1,5 +1,5 @@
 import pytest
-from ecs.dynamic_entity import DynamicEntity
+from ecs.entity import DynamicEntity
 from ecs.essentials import add, update
 
 

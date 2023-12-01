@@ -1,34 +1,29 @@
 from typing import TypeVar
 
-from . import DynamicEntity
-from .dynamic_entity import DynamicEntity
-from .system import create_system
+from ecs import Entity
+
 from .essentials import update, register_attribute, unregister_attribute
+from .system import System
 
 
-class Metasystem:
+_TEntity = TypeVar("_TEntity", bound=Entity)
+
+
+# TODO NEXT rename to MicroEngine?
+class MetasystemFacade:
     """Facade for a metasystem and all interactions with the game."""
+    metasystem: System
 
     def __init__(self):
         """Initializes a new game; creates a metasystem."""
-        def metasystem(system: 'process, ecs_requirements, ecs_targets'):
+
+        @System
+        def metasystem(system: System):
             update(system)
 
-        self._metasystem = create_system(metasystem)
+        self.metasystem = metasystem  # TODO NEXT as a staticmethod?
 
-    def create(self, **attributes) -> DynamicEntity:
-        """Creates in-game entity.
-
-        Args:
-            **attributes: attributes (components) that entity will contain
-
-        Returns:
-            In-game entity
-        """
-        return self.add(DynamicEntity(**attributes))
-
-    T = TypeVar("T")
-    def add(self, entity: T, **attributes) -> T:
+    def add(self, entity: _TEntity) -> _TEntity:
         """Adds an entity to the metasystem; adds __metasystem__ attribute.
 
         Args:
@@ -38,39 +33,41 @@ class Metasystem:
             The same entity
         """
 
-        for name, value in attributes.items():
-            entity[name] = value
-
-        if '__metasystem__' in entity:
+        if entity.__metasystem__ is not None:
             raise OwnershipException(
                 "Entity {entity} is already belongs to a metasystem"
             )
 
-        entity.__metasystem__ = self._metasystem
+        entity.__metasystem__ = self.metasystem
 
-        for attribute, _ in entity:
-            register_attribute(self._metasystem, entity, attribute)
+        for attribute in dir(entity):
+            if attribute.startswith('__') and attribute.endswith('__'): continue
+            register_attribute(self.metasystem, entity, attribute)
 
         return entity
 
-    def delete(self, entity: DynamicEntity) -> None:
+    def delete(self, entity: _TEntity) -> _TEntity:
         """Removes entity from the game.
 
         Args:
             entity: in-game entity to be removed
         """
-        assert "__metasystem__" in entity, "Entity should belong to the metasystem to be deleted from it"
-        unregister_attribute(self._metasystem, entity)
+
+        if entity.__metasystem__ is not None:
+            raise OwnershipException("Entity should belong to the metasystem to be deleted from it")
+
+        unregister_attribute(self.metasystem, entity)
+        return entity
 
     def update(self) -> None:
         """Updates all the systems once."""
-        update(self._metasystem)
+        update(self.metasystem)
 
 
 class OwnershipException(Exception):
     pass
 
 
-def exists(entity: DynamicEntity) -> bool:
+def exists(entity: "Entity") -> bool:
     """Determines whether entity belongs to any metasystem."""
-    return "__metasystem__" in entity
+    return entity.__metasystem__ is not None
