@@ -4,7 +4,7 @@ import setuptools
 
 setuptools.setup(
   name="ecs-girvel",
-  version="2.0.1",
+  version="3.0.0",
   author="Nikita Girvel Dobrynin",
   author_email="widauka@ya.ru",
   description="Annotation-based asynchronous ECS library",
@@ -16,7 +16,7 @@ setuptools.setup(
   ],
   package_dir={"": "."},
   packages=["ecs"],
-  python_requires=">=3.6",
+  python_requires=">=3.7",
   long_description=(Path(__file__).parent / "README.md").read_text(),
   long_description_content_type='text/markdown',
 )

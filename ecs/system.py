@@ -1,7 +1,6 @@
 import functools
 import inspect
-from collections.abc import Iterator
-from typing import Callable, get_type_hints, cast, List, Dict, Tuple
+from typing import Callable, get_type_hints, cast, List, Dict, Tuple, Iterator
 
 from .entity import Entity
 
