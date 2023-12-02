@@ -34,8 +34,11 @@ def test_single_system(use_dataclass):
                 self.custom_name = custom_name
 
     ms.add(SampleEntity("Jackie"))
-    ms.add(SampleEntity("Hyde"))
+    hyde = ms.add(SampleEntity("Hyde"))
 
     ms.update()
+    assert processed_entities == ["Jackie", "Hyde"], "Update does not work"
 
-    assert processed_entities == ["Jackie", "Hyde"]
+    ms.remove(hyde)
+    ms.update()
+    assert processed_entities == ["Jackie", "Hyde", "Jackie"], "Removal does not work"

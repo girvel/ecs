@@ -9,7 +9,7 @@ from ecs import Entity
 # TODO NEXT docs
 class System(Entity):
     name: str
-    ecs_process: Callable[[...], None]
+    ecs_process: Callable[..., None]
     ecs_targets: dict[str, list[Entity]]
     ecs_requirements: dict[str, list[str]]
 
