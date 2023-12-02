@@ -5,13 +5,8 @@ import pytest
 from ecs import MetasystemFacade, Entity, System
 
 
-# TODO NEXT type checking
-# TODO NEXT github action for tests
-@pytest.mark.parametrize("use_dataclass", [
-    (False, ),
-    (True, ),
-])
-def test_single_system(use_dataclass):
+@pytest.fixture
+def sample_setup():
     processed_entities = []
 
     ms = MetasystemFacade()
@@ -23,6 +18,17 @@ def test_single_system(use_dataclass):
     @System
     def process(subject: Named):
         processed_entities.append(subject.custom_name)
+
+    return ms, processed_entities
+
+
+# TODO NEXT type checking
+# TODO NEXT github action for tests
+@pytest.mark.parametrize(
+    "use_dataclass", [False, True]
+)
+def test_single_system(sample_setup, use_dataclass):
+    ms, processed_entities = sample_setup
 
     if use_dataclass:
         @dataclass
@@ -44,8 +50,30 @@ def test_single_system(use_dataclass):
     assert processed_entities == ["Jackie", "Hyde", "Jackie"], "Removal does not work"
 
 
-def test_dynamic_distribution():
-    raise NotImplementedError
+@pytest.mark.parametrize(
+    "sample_setup", [False, True], indirect=True
+)
+def test_dynamic_distribution(sample_setup):
+    ms, processed_entities = sample_setup
+
+    class EmptyEntity(Entity): ...
+
+    e = ms.add(EmptyEntity())
+
+    ms.update()
+    assert processed_entities == []
+
+    e.custom_name = "Kelso"
+    ms.update()
+    assert processed_entities == ["Kelso"]
+
+    e.custom_name = "Leo"
+    ms.update()
+    assert processed_entities == ["Kelso", "Leo"]
+
+    del e.custom_name
+    ms.update()
+    assert processed_entities == ["Kelso", "Leo"]
 
 
 def test_yield():
