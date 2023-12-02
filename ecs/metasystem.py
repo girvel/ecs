@@ -43,6 +43,7 @@ class MetasystemFacade:
         for attribute in dir(entity):
             if attribute.startswith('__') and attribute.endswith('__'): continue
             register_attribute(self._metasystem, entity, attribute)
+            # TODO NEXT remove for, just a call with attribute=None should be faster & cleaner
 
         return entity
 

@@ -1,45 +1,63 @@
-import pytest
-from ecs.entity import DynamicEntity
+from ecs.entity import Entity
 from ecs.essentials import add, update
 
 
-@pytest.fixture
-def pairs_system():
-    class PairsSystem(DynamicEntity):
-        ecs_targets = dict(
+# TODO NEXT thoroughly test all essential functions
+
+class PairsSystem(Entity):
+    def __init__(self):
+        self.ecs_targets = dict(
             first=[],
             second=[],
             container=[],
         )
 
-        ecs_requirements = dict(
+        self.ecs_requirements = dict(
             first={'name'},
             second={'name'},
             container={'pairs'},
         )
 
-        def process(self, first, second, container):
-            container.pairs.append("{} & {}".format(first.name, second.name))
+    @staticmethod
+    def ecs_process(first, second, container):
+        container.pairs.append("{} & {}".format(first.name, second.name))
 
-    return PairsSystem()
+
+class NamedEntity(Entity):
+    def __init__(self, name):
+        self.name = name
+
+
+class SecretlyNamedEntity(Entity):
+    def __init__(self, name_):
+        self.name_ = name_
+
+
+class ContainerEntity(Entity):
+    def __init__(self):
+        self.pairs = []
 
 
 class TestAdd:
-    def test_adds_targets(self, pairs_system):
+    def test_adds_targets(self):
+        pairs_system = PairsSystem()
+
         entities = [
-            DynamicEntity(name='OwnedEntity1'),
-            DynamicEntity(name='OwnedEntity2', something='123'),
-            DynamicEntity(name_='OwnedEntity3'),
+            NamedEntity('OwnedEntity1'),
+            NamedEntity('OwnedEntity2'),
+            SecretlyNamedEntity('OwnedEntity3'),
         ]
 
         for e in entities:
             add(pairs_system, e)
 
-        assert set(pairs_system.ecs_targets['first'])  == set(entities[:2])
+        assert set(pairs_system.ecs_targets['first']) == set(entities[:2])
         assert set(pairs_system.ecs_targets['second']) == set(entities[:2])
 
-    def test_is_repetition_safe(self, pairs_system):
-        e = DynamicEntity(name='OwnedEntity1')
+    def test_is_repetition_safe(self):
+        pairs_system = PairsSystem()
+
+        e = NamedEntity('OwnedEntity1')
 
         add(pairs_system, e)
         add(pairs_system, e)
@@ -49,18 +67,20 @@ class TestAdd:
 
 
 class TestUpdate:
-    def test_bruteforces_entities(self, pairs_system):
+    def test_bruteforces_entities(self):
+        pairs_system = PairsSystem()
+
         npcs = [
-            DynamicEntity(name='Eric'),
-            DynamicEntity(name='Red'),
-            DynamicEntity(name='Kitty'),
+            NamedEntity('Eric'),
+            NamedEntity('Red'),
+            NamedEntity('Kitty'),
         ]
 
-        container = DynamicEntity(pairs=[])
+        container = ContainerEntity()
 
-        pairs_system.ecs_targets['first'] += npcs
-        pairs_system.ecs_targets['second'] += npcs
-        pairs_system.ecs_targets['container'] += [container]
+        pairs_system.ecs_targets['first'].extend(npcs)
+        pairs_system.ecs_targets['second'].extend(npcs)
+        pairs_system.ecs_targets['container'].append(container)
 
         update(pairs_system)
 

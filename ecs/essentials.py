@@ -45,6 +45,7 @@ def update(system: "System"):
         system.ecs_process(*args)
 
 
+# TODO NEXT rename to register & unregister?
 def register_attribute(
     metasystem: "System", entity: "Entity", attribute: str
 ):
