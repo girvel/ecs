@@ -1,4 +1,4 @@
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union
 
 from .essentials import register_attribute, unregister_attribute
 
@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 class Entity:
     """Represents an entity that belongs to some metasystem."""
-    __metasystem__: "System | None" = None
+    __metasystem__: "Union[System, None]" = None
 
     def __setattr__(self, key: str, value: Any) -> None:
         is_new = not hasattr(self, key)

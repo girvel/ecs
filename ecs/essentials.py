@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from .entity import Entity
@@ -64,7 +64,7 @@ def register_attribute(
 
 
 def unregister_attribute(
-    metasystem: "System", entity: "Entity", attribute: str | None = None
+    metasystem: "System", entity: "Entity", attribute: Union[str, None] = None
 ) -> None:
     """Notifies systems that entity lost an attribute or that entity itself
     should be deleted.
