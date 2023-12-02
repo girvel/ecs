@@ -34,6 +34,13 @@ def remove(system: "System", entity: "Entity") -> None:
         if entity in targets:
             targets.remove(entity)
 
+    # TODO OPT this should be really slow, and using for should only make things worse
+    system.ecs_generators = {
+        targets: generator
+        for targets, generator in system.ecs_generators.items()
+        if entity not in targets
+    }
+
 
 def update(system: "System") -> None:
     """Launches a system one time.
