@@ -14,7 +14,7 @@ class System(Entity):
     ecs_requirements: Dict[str, List[str]]
     ecs_generators: Dict[Tuple[Entity, ...], Iterator[None]]
 
-    def __init__(self, system_function: Union[Callable[..., Iterator[None]], None]):
+    def __init__(self, system_function: Callable[..., Union[Iterator[None], None]]):
         function_types = get_type_hints(system_function)
         if "return" in function_types:
             del function_types["return"]

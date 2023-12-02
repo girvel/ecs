@@ -1,4 +1,4 @@
-from ecs import Metasystem, create_system
+from ecs import Metasystem, create_system  # TODO NEXT fix demo
 import time
 
 
