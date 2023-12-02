@@ -52,11 +52,10 @@ def update(system: "System") -> None:
         system.ecs_process(*args)
 
 
-# TODO NEXT rename to register & unregister?
-def register_attribute(
-    metasystem: "System", entity: "Entity", attribute: str
+def register(
+    metasystem: "System", entity: "Entity", *, attribute: Union[str, None] = None
 ) -> None:
-    """Notifies systems that the entity gained new attribute.
+    """Notifies systems that the entity gained new attribute or that the entity itself is added
 
     Args:
         metasystem: metasystem itself, not a facade
@@ -66,12 +65,15 @@ def register_attribute(
 
     add(metasystem, entity)
     for system in metasystem.ecs_targets["system"]:
-        if any(attribute in r for r in system.ecs_requirements.values()):  # type: ignore[attr-defined]
+        if (
+            attribute is None or
+            any(attribute in r for r in system.ecs_requirements.values())  # type: ignore[attr-defined]
+        ):
             add(system, entity)  # type: ignore[arg-type]
 
 
-def unregister_attribute(
-    metasystem: "System", entity: "Entity", attribute: Union[str, None] = None
+def unregister(
+    metasystem: "System", entity: "Entity", *, attribute: Union[str, None] = None
 ) -> None:
     """Notifies systems that entity lost an attribute or that entity itself
     should be deleted.

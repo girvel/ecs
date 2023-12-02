@@ -1,6 +1,6 @@
 from typing import Any, TYPE_CHECKING, Union
 
-from .essentials import register_attribute, unregister_attribute
+from .essentials import register, unregister
 
 if TYPE_CHECKING:
     from .system import System
@@ -16,9 +16,9 @@ class Entity:
         super().__setattr__(key, value)
 
         if self.__metasystem__ is not None and is_new:
-            register_attribute(self.__metasystem__, self, key)
+            register(self.__metasystem__, self, attribute=key)
 
     def __delattr__(self, item: str) -> None:
         super().__delattr__(item)
         if self.__metasystem__ is not None:
-            unregister_attribute(self.__metasystem__, self, item)
+            unregister(self.__metasystem__, self, attribute=item)

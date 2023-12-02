@@ -2,7 +2,7 @@ from typing import TypeVar
 
 from .entity import Entity
 
-from .essentials import update, register_attribute, unregister_attribute
+from .essentials import update, register, unregister
 from .system import System
 
 
@@ -34,16 +34,11 @@ class MetasystemFacade:
         """
 
         if entity.__metasystem__ is not None:
-            raise OwnershipException(
-                "Entity {entity} is already belongs to a metasystem"
-            )
+            raise OwnershipException("Entity {entity} already belongs to a metasystem")
 
         entity.__metasystem__ = self._metasystem
 
-        for attribute in dir(entity):
-            if attribute.startswith('__') and attribute.endswith('__'): continue
-            register_attribute(self._metasystem, entity, attribute)
-            # TODO NEXT remove for, just a call with attribute=None should be faster & cleaner
+        register(self._metasystem, entity)
 
         return entity
 
@@ -57,7 +52,7 @@ class MetasystemFacade:
         if entity.__metasystem__ is None:
             raise OwnershipException("Entity should belong to the metasystem to be deleted from it")
 
-        unregister_attribute(self._metasystem, entity)
+        unregister(self._metasystem, entity)
         return entity
 
     def update(self) -> None:
