@@ -1,9 +1,9 @@
 import functools
 import inspect
 from collections.abc import Iterator
-from typing import Callable, get_type_hints
+from typing import Callable, get_type_hints, ParamSpec, cast, Any
 
-from ecs import Entity
+from .entity import Entity
 
 
 # TODO NEXT use dataclass with disabled __init__
@@ -13,12 +13,13 @@ class System(Entity):
     ecs_process: Callable[..., None]
     ecs_targets: dict[str, list[Entity]]
     ecs_requirements: dict[str, list[str]]
-    ecs_generators: dict[tuple, Iterator[None]] | None
+    ecs_generators: dict[tuple[Entity, ...], Iterator[None]]
 
-    def __init__(self, system_function: Callable[..., None]):
+    def __init__(self, system_function: Callable[..., Iterator[None] | None]):
         function_types = get_type_hints(system_function)
 
         self.name = system_function.__name__
+        self.ecs_generators = {}
 
         self.ecs_targets = {
             member_name: [] for member_name in function_types
@@ -31,16 +32,14 @@ class System(Entity):
         }
 
         if inspect.isgeneratorfunction(system_function):
-            self.ecs_generators = {}
             self.ecs_process = _generate_async_process(self, system_function)
         else:
-            self.ecs_generators = None
-            self.ecs_process = system_function
+            self.ecs_process = cast(Callable[..., None], system_function)
 
 
-def _generate_async_process(system, system_function):
+def _generate_async_process(system: System, system_function: Callable[..., Iterator[None]]) -> Callable[..., None]:
     @functools.wraps(system_function)
-    def result(*args):
+    def result(*args: Entity) -> None:
         if args not in system.ecs_generators:
             system.ecs_generators[args] = system_function(*args)
 

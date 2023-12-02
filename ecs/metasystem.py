@@ -1,6 +1,6 @@
 from typing import TypeVar
 
-from ecs import Entity
+from .entity import Entity
 
 from .essentials import update, register_attribute, unregister_attribute
 from .system import System
@@ -14,11 +14,11 @@ class MetasystemFacade:
     """Facade for a metasystem and all interactions with the game."""
     _metasystem: System
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes a new game; creates a metasystem."""
 
         @System
-        def metasystem(system: System):
+        def metasystem(system: System) -> None:
             update(system)
 
         self._metasystem = metasystem
