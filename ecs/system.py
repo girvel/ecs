@@ -17,6 +17,8 @@ class System(Entity):
 
     def __init__(self, system_function: Callable[..., Iterator[None] | None]):
         function_types = get_type_hints(system_function)
+        if "return" in function_types:
+            del function_types["return"]
 
         self.name = system_function.__name__
         self.ecs_generators = {}
