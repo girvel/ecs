@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from .system import System
 
 
-def add(system: "System", entity: "Entity"):
+def add(system: "System", entity: "Entity") -> None:
     """Tries to register entity as a system target.
 
     Succeeds if entity has all the required fields to be a target for the
@@ -24,7 +24,7 @@ def add(system: "System", entity: "Entity"):
                 targets.append(entity)
 
 
-def remove(system: "System", entity: "Entity"):
+def remove(system: "System", entity: "Entity") -> None:
     """Tries to unregister entity from a system.
 
     Guarantees that the entity will no longer be processed by the system.
@@ -35,7 +35,7 @@ def remove(system: "System", entity: "Entity"):
             targets.remove(entity)
 
 
-def update(system: "System"):
+def update(system: "System") -> None:
     """Launches a system one time.
 
     Calls a system.ecs_process with each possible combination of targets.
@@ -48,7 +48,7 @@ def update(system: "System"):
 # TODO NEXT rename to register & unregister?
 def register_attribute(
     metasystem: "System", entity: "Entity", attribute: str
-):
+) -> None:
     """Notifies systems that the entity gained new attribute.
 
     Args:
@@ -65,7 +65,7 @@ def register_attribute(
 
 def unregister_attribute(
     metasystem: "System", entity: "Entity", attribute: str | None = None
-):
+) -> None:
     """Notifies systems that entity lost an attribute or that entity itself
     should be deleted.
 
@@ -87,5 +87,3 @@ def unregister_attribute(
 
     for system in systems:
         remove(system, entity)
-
-    return entity
