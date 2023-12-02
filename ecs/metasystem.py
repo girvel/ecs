@@ -21,7 +21,7 @@ class MetasystemFacade:
         def metasystem(system: System):
             update(system)
 
-        self._metasystem = metasystem  # TODO NEXT as a staticmethod?
+        self._metasystem = metasystem
 
     def add(self, entity: _TEntity) -> _TEntity:
         """Adds an entity to the metasystem; adds __metasystem__ attribute.

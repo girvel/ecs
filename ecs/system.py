@@ -3,10 +3,8 @@ from typing import Callable, get_type_hints
 from ecs import Entity
 
 
-# TODO NEXT yield
 # TODO NEXT use dataclass with disabled __init__
 # TODO NEXT cleanup
-# TODO NEXT docs
 class System(Entity):
     name: str
     ecs_process: Callable[..., None]

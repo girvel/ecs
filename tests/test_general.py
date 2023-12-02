@@ -12,7 +12,7 @@ def sample_setup():
     ms = MetasystemFacade()
 
     class Named:
-        custom_name: str  # TODO NEXT warnings on type mismatch on debug mode
+        custom_name: str
 
     @ms.add
     @System
@@ -22,8 +22,6 @@ def sample_setup():
     return ms, processed_entities
 
 
-# TODO NEXT type checking
-# TODO NEXT github action for tests
 @pytest.mark.parametrize(
     "use_dataclass", [False, True]
 )

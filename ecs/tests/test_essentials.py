@@ -2,8 +2,6 @@ from ecs.entity import Entity
 from ecs.essentials import add, update
 
 
-# TODO NEXT thoroughly test all essential functions
-
 class PairsSystem(Entity):
     def __init__(self):
         self.ecs_targets = dict(
