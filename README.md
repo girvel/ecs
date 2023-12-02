@@ -1,3 +1,5 @@
+[//]: # (TODO mention minimalistic & does not presume anything, maximal compatibility)
+
 # ECS library
 
 This is a library for python containing an interpretation of ECS design pattern. 
