@@ -1,12 +1,12 @@
 import functools
 import inspect
+from dataclasses import dataclass
 from typing import Callable, get_type_hints, cast, List, Dict, Tuple, Iterator, Union
 
 from .entity import Entity
 
 
-# TODO NEXT use dataclass with disabled __init__
-# TODO NEXT cleanup
+@dataclass(init=False)
 class System(Entity):
     name: str
     ecs_process: Callable[..., None]
