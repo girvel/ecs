@@ -59,8 +59,8 @@ def register_attribute(
 
     add(metasystem, entity)
     for system in metasystem.ecs_targets["system"]:
-        if any(attribute in r for r in system.ecs_requirements.values()):
-            add(system, entity)
+        if any(attribute in r for r in system.ecs_requirements.values()):  # type: ignore[attr-defined]
+            add(system, entity)  # type: ignore[arg-type]
 
 
 def unregister_attribute(
@@ -82,8 +82,8 @@ def unregister_attribute(
     else:
         systems = [
             s for s in systems
-            if any(attribute in r for r in s.ecs_requirements.values())
+            if any(attribute in r for r in s.ecs_requirements.values())  # type: ignore[attr-defined]
         ]
 
     for system in systems:
-        remove(system, entity)
+        remove(system, entity)  # type: ignore[arg-type]

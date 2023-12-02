@@ -12,6 +12,6 @@ from .entity import Entity
 from .metasystem import MetasystemFacade, exists
 from .system import System
 
-__all__ = [e.__name__ for e in [
+__all__ = [e.__name__ for e in [  # type: ignore[attr-defined]
     Entity, System, MetasystemFacade, exists,
 ]]
