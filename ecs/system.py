@@ -1,7 +1,7 @@
 import functools
 import inspect
 from collections.abc import Iterator
-from typing import Callable, get_type_hints, cast
+from typing import Callable, get_type_hints, cast, List, Dict, Tuple
 
 from .entity import Entity
 
@@ -11,9 +11,9 @@ from .entity import Entity
 class System(Entity):
     name: str
     ecs_process: Callable[..., None]
-    ecs_targets: dict[str, list[Entity]]
-    ecs_requirements: dict[str, list[str]]
-    ecs_generators: dict[tuple[Entity, ...], Iterator[None]]
+    ecs_targets: Dict[str, List[Entity]]
+    ecs_requirements: Dict[str, List[str]]
+    ecs_generators: Dict[Tuple[Entity, ...], Iterator[None]]
 
     def __init__(self, system_function: Callable[..., Iterator[None] | None]):
         function_types = get_type_hints(system_function)
