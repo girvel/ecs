@@ -1,5 +1,5 @@
 from ecs.entity import Entity
-from ecs.essentials import add, update
+from ecs.essentials import add, update, remove
 
 
 class PairsSystem(Entity):
@@ -16,24 +16,29 @@ class PairsSystem(Entity):
             container={'pairs'},
         )
 
+        self.ecs_generators = {}
+
     @staticmethod
     def ecs_process(first, second, container):
         container.pairs.append("{} & {}".format(first.name, second.name))
 
 
-class NamedEntity(Entity):
+class NamedEntity:
     def __init__(self, name):
         self.name = name
+        self.__metasystem__ = None
 
 
-class SecretlyNamedEntity(Entity):
+class SecretlyNamedEntity:
     def __init__(self, name_):
         self.name_ = name_
+        self.__metasystem__ = None
 
 
-class ContainerEntity(Entity):
+class ContainerEntity:
     def __init__(self):
         self.pairs = []
+        self.__metasystem__ = None
 
 
 class TestAdd:
@@ -62,6 +67,18 @@ class TestAdd:
 
         assert len(pairs_system.ecs_targets['first']) == 1
         assert len(pairs_system.ecs_targets['second']) == 1
+
+
+class TestRemove:
+    def test_removes_targets(self):
+        pairs_system = PairsSystem()
+        pairs_system.ecs_targets['first'].append(e := NamedEntity("OwnedEntity1"))
+
+        remove(pairs_system, e)
+        assert len(pairs_system.ecs_targets['first']) == 0
+
+        remove(pairs_system, e)
+        assert len(pairs_system.ecs_targets['first']) == 0
 
 
 class TestUpdate:

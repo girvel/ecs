@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 
 class Entity:
-    """Mixin class for entities.
+    """Mixin class for dynamically distributed entities.
 
     Is able to dynamically add and remove the entity from systems when its attributes change.
     """
