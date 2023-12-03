@@ -1,9 +1,10 @@
+import sys
 from typing import Any, TYPE_CHECKING, Union
 
 from .essentials import register, unregister
 
 if TYPE_CHECKING:
-    from .system import System
+    from .components import SystemComponent
 
 
 class Entity:
@@ -12,7 +13,7 @@ class Entity:
     Is able to dynamically add and remove the entity from systems when its attributes change.
     """
 
-    __metasystem__: "Union[System, None]" = None
+    __metasystem__: "Union[SystemComponent, None]" = None
 
     def __setattr__(self, key: str, value: Any) -> None:
         is_new = not hasattr(self, key)

@@ -4,11 +4,10 @@ import itertools
 from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
-    from .entity import Entity
-    from .system import System
+    from .components import EntityComponent, SystemComponent
 
 
-def add(system: "System", entity: "Entity") -> None:
+def add(system: SystemComponent, entity: EntityComponent) -> None:
     for member_name, requirements in system.ecs_requirements.items():
         if all(hasattr(entity, attribute) for attribute in requirements):
             targets = system.ecs_targets[member_name]
@@ -16,7 +15,7 @@ def add(system: "System", entity: "Entity") -> None:
                 targets.append(entity)
 
 
-def remove(system: "System", entity: "Entity") -> None:
+def remove(system: SystemComponent, entity: EntityComponent) -> None:
     for targets in system.ecs_targets.values():
         if entity in targets:
             targets.remove(entity)
@@ -29,13 +28,13 @@ def remove(system: "System", entity: "Entity") -> None:
     }
 
 
-def update(system: "System") -> None:
+def update(system: SystemComponent) -> None:
     for args in itertools.product(*system.ecs_targets.values()):
         system.ecs_process(*args)
 
 
 def register(
-    metasystem: "System", entity: "Entity", *, attribute: Union[str, None] = None
+    metasystem: SystemComponent, entity: EntityComponent, *, attribute: Union[str, None] = None
 ) -> None:
     add(metasystem, entity)
     for system in metasystem.ecs_targets["system"]:
@@ -47,7 +46,7 @@ def register(
 
 
 def unregister(
-    metasystem: "System", entity: "Entity", *, attribute: Union[str, None] = None
+    metasystem: SystemComponent, entity: EntityComponent, *, attribute: Union[str, None] = None
 ) -> None:
     systems = [metasystem, *metasystem.ecs_targets["system"]]
 

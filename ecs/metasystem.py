@@ -1,9 +1,10 @@
 from typing import TypeVar
 
+from .system import System
 from .entity import Entity
 
 from .essentials import update, register, unregister
-from .system import System
+from .components import SystemComponent, EntityComponent
 
 
 _TEntity = TypeVar("_TEntity", bound=Entity)
@@ -18,7 +19,7 @@ class MetasystemFacade:
         """Initializes a new game; creates a metasystem."""
 
         @System
-        def metasystem(system: System) -> None:
+        def metasystem(system: SystemComponent) -> None:
             update(system)
 
         self._metasystem = metasystem
@@ -67,6 +68,6 @@ class OwnershipException(Exception):
     pass
 
 
-def exists(entity: "Entity") -> bool:
+def exists(entity: EntityComponent) -> bool:
     """Determines whether the entity belongs to any ECS."""
     return entity.__metasystem__ is not None
