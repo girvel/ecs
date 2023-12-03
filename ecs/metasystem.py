@@ -9,9 +9,9 @@ from .system import System
 _TEntity = TypeVar("_TEntity", bound=Entity)
 
 
-# TODO NEXT rename to MicroEngine?
 class MetasystemFacade:
-    """Facade for a metasystem and all interactions with the game."""
+    """Facade class containing all general ECS logic."""
+
     _metasystem: System
 
     def __init__(self) -> None:
@@ -24,7 +24,7 @@ class MetasystemFacade:
         self._metasystem = metasystem
 
     def add(self, entity: _TEntity) -> _TEntity:
-        """Adds an entity to the metasystem; adds __metasystem__ attribute.
+        """Registers entity as a member of ECS; sets entity's __metasystem__ attribute.
 
         Args:
             entity: entity to be added
@@ -43,10 +43,13 @@ class MetasystemFacade:
         return entity
 
     def remove(self, entity: _TEntity) -> _TEntity:
-        """Removes entity from the game.
+        """Unregisters entity from the ECS.
 
         Args:
-            entity: in-game entity to be removed
+            entity: entity to be added
+
+        Returns:
+            The same entity
         """
 
         if entity.__metasystem__ is None:
@@ -65,5 +68,5 @@ class OwnershipException(Exception):
 
 
 def exists(entity: "Entity") -> bool:
-    """Determines whether entity belongs to any metasystem."""
+    """Determines whether the entity belongs to any ECS."""
     return entity.__metasystem__ is not None

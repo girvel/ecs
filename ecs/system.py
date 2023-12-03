@@ -8,6 +8,8 @@ from .entity import Entity
 
 @dataclass(init=False)
 class System(Entity):
+    """Basic implementation of the system pattern."""
+
     name: str
     ecs_process: Callable[..., None]
     ecs_targets: Dict[str, List[Entity]]
@@ -15,6 +17,12 @@ class System(Entity):
     ecs_generators: Dict[Tuple[Entity, ...], Iterator[None]]
 
     def __init__(self, system_function: Callable[..., Union[Iterator[None], None]]):
+        """Creates a system from a function with annotated arguments
+
+        Args:
+            system_function: function with system's logic. Can be a generator function.
+        """
+
         function_types = get_type_hints(system_function)
         if "return" in function_types:
             del function_types["return"]

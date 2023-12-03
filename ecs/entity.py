@@ -7,7 +7,11 @@ if TYPE_CHECKING:
 
 
 class Entity:
-    """Represents an entity that belongs to some metasystem."""
+    """Mixin class for entities.
+
+    Is able to dynamically add and remove the entity from systems when its attributes change.
+    """
+
     __metasystem__: "Union[System, None]" = None
 
     def __setattr__(self, key: str, value: Any) -> None:
