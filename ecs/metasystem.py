@@ -9,10 +9,10 @@ from .system import System
 _TEntity = TypeVar("_TEntity", bound=Entity)
 
 
-class MetasystemFacade:
+class MetasystemFacade(Entity):
     """Facade class containing all general ECS logic."""
 
-    _metasystem: System
+    ecs_metasystem_facade_flag: None = None
 
     def __init__(self) -> None:
         """Initializes a new game; creates a metasystem."""
@@ -21,7 +21,7 @@ class MetasystemFacade:
         def metasystem(system: System) -> None:
             update(system)
 
-        self._metasystem = metasystem
+        self.__metasystem__ = metasystem
 
     def add(self, entity: _TEntity) -> _TEntity:
         """Registers entity as a member of ECS; sets entity's __metasystem__ attribute.
@@ -36,9 +36,9 @@ class MetasystemFacade:
         if entity.__metasystem__ is not None:
             raise OwnershipException("Entity {entity} already belongs to a metasystem")
 
-        entity.__metasystem__ = self._metasystem
+        entity.__metasystem__ = self.__metasystem__
 
-        register(self._metasystem, entity)
+        register(self.__metasystem__, entity)
 
         return entity
 
@@ -55,12 +55,16 @@ class MetasystemFacade:
         if entity.__metasystem__ is None:
             raise OwnershipException("Entity should belong to the metasystem to be deleted from it")
 
-        unregister(self._metasystem, entity)
+        unregister(self.__metasystem__, entity)
         return entity
 
     def update(self) -> None:
         """Updates all the systems once."""
-        update(self._metasystem)
+        update(self.__metasystem__)
+
+    def register_itself(self):
+        """Allows system to access MetasystemFacade as entity. Call after adding systems."""
+        register(self.__metasystem__, self)
 
 
 class OwnershipException(Exception):

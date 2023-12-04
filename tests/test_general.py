@@ -101,3 +101,22 @@ def test_yield():
 
     ms.update()
     assert processed_entities == [0, 0, 1, 0, 2]
+
+
+def test_facade_as_an_entity():
+    processed_entities = []
+
+    ms = MetasystemFacade()
+
+    class MetasystemComponent:
+        ecs_metasystem_facade_flag: None
+
+    @ms.add
+    @System
+    def meta_meta_system(metasystem_facade: MetasystemComponent):
+        processed_entities.append(metasystem_facade)
+
+    ms.register_itself()
+
+    ms.update()
+    assert processed_entities == [ms]
