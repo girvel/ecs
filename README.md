@@ -1,67 +1,95 @@
 [//]: # (TODO mention minimalistic & does not presume anything, maximal compatibility)
 
-# ECS library
+# ECS micro-engine
 
-This is a library for python containing an interpretation of ECS design pattern. 
+Library for python containing an interpretation of ECS design pattern. 
 
 ## Features
 
-1. You can add components during the game and entity will be automatically registered to a system if needed
-2. You can write somewhat asynchronous systems (using yield to skip a frame)
+1. Adding/removing entity's attributes causes dynamic addition/removal of the entity from the corresponding systems
+2. Systems with annotation-based syntax
+3. Asynchronous systems (yield skips a frame)
+4. Systems accept multiple arguments, preventing global mutable state issues
+5. Full compatibility with type hints
 
 ## Interpretation
 
-1. Entity is a javascript-style object (`entity.name == entity['name']`)
+1. Entity is a python object
 2. Component is entity's attribute
-3. System is an entity describing an interaction between N entities
+3. System is an entity describing an interaction between cartesian product of entities
 4. Metasystem is a system that launches other systems
+5. MetasystemFacade encapsulates all general logic (add, remove, update)
+
+## Installation
+
+```bash
+pip install ecs-girvel
+```
 
 ## Usage
 
-You can also see [girvel/metaworld](https://github.com/girvel/metaworld), ecs is written for it.
+You can also see [girvel/fallen](https://github.com/girvel/fallen), ecs is written for it.
 
 ```py
-from ecs import Metasystem, create_system
+from ecs import MetasystemFacade, System, Entity  # TODO NEXT fix demo
 import time
 
 
 # 1. You create a metasystem
-ms = Metasystem()
+ms = MetasystemFacade()
 
 dt = 0.04
 
 # 2. You create systems and add them to metasystem
-@ms.add
-@create_system
-def gravity(
-    object: 'vy',  # object is any entity with 'vy' component
-    constants: 'g',  # constants is any entity with 'g' component
-):
-    object.vy += constants.g * dt
+class VerticalSpeed:
+    vy: float
+
+class GravityConstants:
+    g: float
 
 @ms.add
-@create_system
-def inertion(object: 'x, y, vx, vy'):
-    object.x += object.vx * dt
-    object.y += object.vy * dt
+@System
+def gravity(target: VerticalSpeed, constants: GravityConstants):
+    target.vy += constants.g * dt
+
+class Inert:
+    x: float
+    y: float
+    vx: float
+    vy: float
 
 @ms.add
-@create_system
-def output(object: 'name, x, y'):
+@System
+def inertia(target: Inert):
+    target.x += target.vx * dt
+    target.y += target.vy * dt
+
+class Displayable:
+    x: float
+    y: float
+    name: str
+
+@ms.add
+@System
+def output(target: Displayable):
     yield from range(int(1 / dt) - 1)  # skips 24 out of 25 frames
-    print(f'{object.name}: {object.x:.2f}, {object.y:.2f}')
+    print(f'{target.name}: {target.x:.2f}, {target.y:.2f}')
+
 
 # 3. You create objects
-ms.create(name='falling_guy1', x=0, y=0, vx=0, vy=0)
-ms.create(name='falling_guy2', x=100, y=0, vx=0, vy=0)
-ms.create(g=10)
+class DynamicEntity(Entity):
+    def __init__(self, **attributes):
+        for key, value in attributes.items():
+            setattr(self, key, value)
+
+ms.add(DynamicEntity(name='falling_guy1', x=0, y=0, vx=0, vy=0))
+ms.add(DynamicEntity(name='falling_guy2', x=100, y=0, vx=0, vy=0))
+ms.add(DynamicEntity(g=10))
+
 
 # 4. Game loop
-while True:
-    ms.update()
-    time.sleep(dt)
+if __name__ == "__main__":
+    while True:
+        ms.update()
+        time.sleep(dt)
 ```
-
-## Installation
-
-I recommend you build from sources, version in pypi is old.
