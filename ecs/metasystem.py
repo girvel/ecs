@@ -12,6 +12,7 @@ _TEntity = TypeVar("_TEntity", bound=Entity)
 class MetasystemFacade(Entity):
     """Facade class containing all general ECS logic."""
 
+    __metasystem__: System
     ecs_metasystem_facade_flag: None = None
 
     def __init__(self) -> None:
@@ -62,7 +63,7 @@ class MetasystemFacade(Entity):
         """Updates all the systems once."""
         update(self.__metasystem__)
 
-    def register_itself(self):
+    def register_itself(self) -> None:
         """Allows system to access MetasystemFacade as entity. Call after adding systems."""
         register(self.__metasystem__, self)
 
