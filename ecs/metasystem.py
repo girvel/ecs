@@ -35,7 +35,7 @@ class MetasystemFacade(Entity):
         """
 
         if entity.__metasystem__ is not None:
-            raise OwnershipException("Entity {entity} already belongs to a metasystem")
+            raise OwnershipException(f"Can not add entity {entity} - it already belongs to a metasystem")
 
         entity.__metasystem__ = self.__metasystem__
 
@@ -53,8 +53,10 @@ class MetasystemFacade(Entity):
             The same entity
         """
 
-        if entity.__metasystem__ is None:
-            raise OwnershipException("Entity should belong to the metasystem to be deleted from it")
+        if entity.__metasystem__ is not self.__metasystem__:
+            raise OwnershipException(
+                f"Can not remove entity {entity} - it does not belong to metasystem {self.__metasystem__}"
+            )
 
         unregister(self.__metasystem__, entity)
         return entity
