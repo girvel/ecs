@@ -31,7 +31,7 @@ pip install ecs-girvel
 You can also see [girvel/fallen](https://github.com/girvel/fallen), ecs is written for it.
 
 ```py
-from ecs import MetasystemFacade, System, Entity  # TODO NEXT fix demo
+from ecs import MetasystemFacade, System, Entity
 import time
 
 

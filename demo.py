@@ -1,4 +1,4 @@
-from ecs import MetasystemFacade, System, Entity  # TODO NEXT fix demo
+from ecs import MetasystemFacade, System, Entity
 import time
 
 
